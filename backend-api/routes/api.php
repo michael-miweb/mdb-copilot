@@ -1,12 +1,33 @@
 <?php
 
-use Illuminate\Http\Request;
+// Permissions RBAC :
+// owner: full access
+// guest-read: read-only access to properties, pipeline
+// guest-extended: read + update properties, read pipeline
+
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/invitations/accept', [InvitationController::class, 'accept']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/user', [AuthController::class, 'user']);
+
+    Route::put('/profile', [ProfileController::class, 'updateProfile']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
+
+    Route::middleware('abilities:owner')->group(function () {
+        Route::post('/invitations', [InvitationController::class, 'store']);
+        Route::get('/invitations', [InvitationController::class, 'index']);
+        Route::delete('/invitations/{invitation}', [InvitationController::class, 'revoke']);
+    });
+});

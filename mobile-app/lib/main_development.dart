@@ -2,5 +2,7 @@ import 'package:mdb_copilot/app/app.dart';
 import 'package:mdb_copilot/bootstrap.dart';
 
 Future<void> main() async {
-  await bootstrap(() => const App());
+  await bootstrap(
+    () => const App(apiBaseUrl: 'http://localhost:4080/api'),
+  );
 }

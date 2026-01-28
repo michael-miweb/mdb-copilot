@@ -1,15 +1,14 @@
-// Ignore for testing purposes
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mdb_copilot/app/app.dart';
-import 'package:mdb_copilot/counter/counter.dart';
 
 void main() {
   group('App', () {
-    testWidgets('renders CounterPage', (tester) async {
-      await tester.pumpWidget(App());
-      expect(find.byType(CounterPage), findsOneWidget);
+    testWidgets('renders', (tester) async {
+      await tester.pumpWidget(
+        const App(apiBaseUrl: 'http://localhost:4080/api'),
+      );
+      await tester.pump();
+      expect(find.byType(App), findsOneWidget);
     });
   });
 }
