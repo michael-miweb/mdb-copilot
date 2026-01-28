@@ -1,0 +1,73 @@
+services:
+  app:
+    image: docker-registry.miweb.fr/mdb-copilot-api:latest
+    container_name: mdb-copilot-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    env_file:
+      - .env.production
+    networks:
+      - docker_internal
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  mysql:
+    image: mysql:8.0
+    container_name: mdb-copilot-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - docker_internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  queue:
+    image: docker-registry.miweb.fr/mdb-copilot-api:latest
+    container_name: mdb-copilot-queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file:
+      - .env.production
+    networks:
+      - docker_internal
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  scheduler:
+    image: docker-registry.miweb.fr/mdb-copilot-api:latest
+    container_name: mdb-copilot-scheduler
+    restart: unless-stopped
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    env_file:
+      - .env.production
+    networks:
+      - docker_internal
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+networks:
+  docker_internal:
+    external: true
+
+volumes:
+  mysql-data:
+    driver: local
