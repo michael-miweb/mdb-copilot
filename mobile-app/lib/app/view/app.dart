@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mdb_copilot/app/routes.dart';
 import 'package:mdb_copilot/core/api/api_client.dart';
 import 'package:mdb_copilot/core/api/token_storage.dart';
+import 'package:mdb_copilot/core/theme/mdb_dark_theme.dart';
+import 'package:mdb_copilot/core/theme/mdb_light_theme.dart';
 import 'package:mdb_copilot/features/auth/data/auth_remote_source.dart';
 import 'package:mdb_copilot/features/auth/data/auth_repository.dart';
 import 'package:mdb_copilot/features/auth/presentation/cubit/auth_cubit.dart';
@@ -94,11 +97,11 @@ class _AppState extends State<App> {
         BlocProvider.value(value: _invitationCubit),
       ],
       child: MaterialApp.router(
-        theme: ThemeData(
-          appBarTheme: AppBarTheme(
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          useMaterial3: true,
+        theme: mdbLightTheme.copyWith(
+          textTheme: GoogleFonts.interTextTheme(mdbLightTheme.textTheme),
+        ),
+        darkTheme: mdbDarkTheme.copyWith(
+          textTheme: GoogleFonts.interTextTheme(mdbDarkTheme.textTheme),
         ),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

@@ -78,6 +78,40 @@ class AuthRemoteSource {
     }
   }
 
+  Future<String> forgotPassword({required String email}) async {
+    try {
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      return response.data!['message'] as String;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<String> resetPassword({
+    required String token,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        '/auth/reset-password',
+        data: {
+          'token': token,
+          'email': email,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+      return response.data!['message'] as String;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   AuthException _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionError ||
         e.type == DioExceptionType.connectionTimeout) {

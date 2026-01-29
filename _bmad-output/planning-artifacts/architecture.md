@@ -3,6 +3,9 @@ stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8]
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/product-brief-mdb-copilot-2026-01-27.md
+  - _bmad-output/planning-artifacts/ux-design-specification.md
+revisedAt: '2026-01-29'
+revisionNote: 'UX Design integration — Material 3, custom palette, 7 custom components, AdaptiveScaffold, WCAG 2.1 AA'
 workflowType: 'architecture'
 lastStep: 8
 status: 'complete'
@@ -52,7 +55,7 @@ Les FRs se regroupent architecturalement en 4 domaines :
 - **Stack hétérogène** : Flutter ↔ Laravel via API REST JSON
 - **OVH serveur privé** : hébergement imposé, Laravel natif sur serveur dédié
 - **DVF data.gouv.fr** : API externe, données avec ~6 mois de retard, proxy Laravel
-- **iOS 26+ Liquid Glass** : design system custom à implémenter dans Flutter
+- **Material 3** : design system unique, palette Violet/Magenta (light) + Indigo/Orchidée (dark), Inter font, Material Symbols Rounded, AdaptiveScaffold responsive, WCAG 2.1 AA
 - **Développement assisté par agents IA** : architecture claire, conventions strictes, séparation nette des responsabilités pour faciliter le travail des agents
 
 ### Cross-Cutting Concerns
@@ -226,7 +229,7 @@ Stack de production sur le modèle `meal-planner/backend-api` :
 | State management | Bloc / Cubit par feature | Very Good CLI standard |
 | Data layer | Repository pattern (local + remote) | Abstraction offline/online |
 | Routing | GoRouter | Standard VGV, déclaratif |
-| Design system | `adaptive_platform_ui` (adaptatif) + package `mdb_ui` (widgets métier) | iOS 26+ Liquid Glass automatique, widgets MDB réutilisables |
+| Design system | Material 3 + `flutter_adaptive_scaffold` + package `mdb_ui` | M3 pur, NavBar < 600dp / NavRail ≥ 600dp, 7 composants custom MDB |
 | Photos | image_picker + compression + upload queue | UX fluide offline |
 
 ### Infrastructure & Deployment
@@ -309,7 +312,7 @@ lib/
 ├── core/                   # Shared : sync engine, API client, DB
 └── l10n/                   # Traductions
 packages/
-└── mdb_ui/                 # Design system iOS 26 Liquid Glass
+└── mdb_ui/                 # Design system Material 3 + 7 composants custom
 test/
 ├── features/               # Miroir de lib/features/
 └── core/
@@ -528,19 +531,28 @@ mobile-app/
 │       └── l10n.dart
 ├── packages/
 │   └── mdb_ui/
-│       ├── pubspec.yaml              # depends on adaptive_platform_ui
+│       ├── pubspec.yaml              # depends on flutter_adaptive_scaffold, google_fonts, material_symbols_icons
 │       ├── lib/
 │       │   ├── mdb_ui.dart
 │       │   ├── theme/
-│       │   │   └── mdb_theme.dart
+│       │   │   ├── mdb_theme.dart          # ColorScheme.fromSeed + dark overrides
+│       │   │   ├── mdb_light_theme.dart    # Violet/Magenta palette
+│       │   │   └── mdb_dark_theme.dart     # Indigo/Orchidée palette custom
 │       │   ├── tokens/
-│       │   │   ├── colors.dart
-│       │   │   ├── typography.dart
-│       │   │   └── spacing.dart
+│       │   │   ├── colors.dart             # Full scales light + dark
+│       │   │   ├── typography.dart         # Inter font, M3 type scale
+│       │   │   └── spacing.dart            # 4/8/12/16/24px
 │       │   └── widgets/
-│       │       ├── mdb_property_card.dart
-│       │       ├── mdb_score_badge.dart
-│       │       └── mdb_kanban_column.dart
+│       │       ├── mdb_score_card.dart
+│       │       ├── mdb_kanban_board.dart
+│       │       ├── mdb_kanban_column.dart
+│       │       ├── mdb_kanban_card.dart
+│       │       ├── mdb_visit_guide_category.dart
+│       │       ├── mdb_guided_question.dart
+│       │       ├── mdb_post_visit_summary.dart
+│       │       ├── mdb_dvf_comparator.dart
+│       │       ├── mdb_offline_sync_indicator.dart
+│       │       └── mdb_property_card.dart
 │       └── test/
 ├── test/
 │   ├── features/
@@ -703,7 +715,7 @@ backend-api/
 - Sanctum tokens + RBAC abilities : compatible Flutter (stockage token via `flutter_secure_storage`)
 - Bloc/Cubit + Repository pattern + Drift : chaîne bien définie, pas de court-circuit
 - Sail dev + FrankenPHP prod : même codebase Laravel, environnements isolés
-- `adaptive_platform_ui` : rendu iOS 26+ / Cupertino legacy / Material automatique, compatible Flutter 3.38
+- Material 3 + `flutter_adaptive_scaffold` : NavigationBar (mobile < 600dp) / NavigationRail (desktop ≥ 600dp), palette custom Violet/Magenta light + Indigo/Orchidée dark, Inter font, Material Symbols Rounded, WCAG 2.1 AA
 
 **Consistance patterns :** snake_case DB/API/JSON, camelCase Dart, PascalCase classes — conventions standard des deux écosystèmes. Aucune friction.
 
@@ -743,7 +755,7 @@ backend-api/
 **Gaps importants (à détailler dans les epics) :**
 - Schéma Drift détaillé (colonnes exactes) → epic Data Model
 - Contenu exact des fiches mémo → epic Memo Cards
-- Design tokens MDB précis → epic UI
+- ~~Design tokens MDB précis~~ → **Résolu** : UX Design Specification complète (palette, typo, spacing, composants)
 
 **Gaps nice-to-have (post-MVP) :**
 - Monitoring Sentry
@@ -754,7 +766,8 @@ backend-api/
 
 - [x] Contexte projet analysé
 - [x] Contraintes techniques identifiées
-- [x] Stack technologique complet (Flutter 3.38 + Laravel 12 + Drift + Sanctum + Sail + FrankenPHP + adaptive_platform_ui)
+- [x] Stack technologique complet (Flutter 3.38 + Laravel 12 + Drift + Sanctum + Sail + FrankenPHP + Material 3 + AdaptiveScaffold)
+- [x] UX Design Specification intégrée (palette, composants custom, responsive, accessibilité WCAG 2.1 AA)
 - [x] Décisions critiques documentées avec versions
 - [x] Patterns d'implémentation définis
 - [x] Conventions de nommage établies
@@ -775,7 +788,8 @@ backend-api/
 - Conventions alignées sur les standards des deux écosystèmes
 - Offline-first bien structuré (Drift + SyncEngine)
 - DevOps calqué sur un projet existant (meal-planner)
-- UI adaptative automatique via adaptive_platform_ui
+- Material 3 pur + AdaptiveScaffold (NavBar < 600dp / NavRail ≥ 600dp)
+- UX Design Specification complète : palette custom, 7 composants, WCAG 2.1 AA
 - Patterns clairs pour les agents IA
 
 **Améliorations futures :**

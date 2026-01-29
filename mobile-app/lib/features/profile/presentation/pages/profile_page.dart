@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mdb_copilot/core/theme/mdb_tokens.dart';
 import 'package:mdb_copilot/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:mdb_copilot/features/auth/presentation/cubit/auth_state.dart';
 import 'package:mdb_copilot/features/profile/presentation/cubit/profile_cubit.dart';
@@ -13,28 +14,57 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocListener<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is ProfileUpdated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Modifications enregistrées.'),
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outlined,
+                    color: theme.colorScheme.onInverseSurface,
+                  ),
+                  const SizedBox(width: MdbTokens.space8),
+                  const Text('Modifications enregistrées.'),
+                ],
+              ),
             ),
           );
         } else if (state is ProfileError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.error_outlined,
+                    color: theme.colorScheme.onError,
+                  ),
+                  const SizedBox(width: MdbTokens.space8),
+                  Expanded(child: Text(state.message)),
+                ],
+              ),
+              backgroundColor: theme.colorScheme.error,
+              action: SnackBarAction(
+                label: 'Réessayer',
+                textColor: theme.colorScheme.onError,
+                onPressed: () {},
+              ),
             ),
           );
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+          leading: Semantics(
+            button: true,
+            label: 'Retour',
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.pop(),
+            ),
           ),
           title: const Text('Mon profil'),
         ),
@@ -45,14 +75,14 @@ class ProfilePage extends StatelessWidget {
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(MdbTokens.space16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ProfileForm(user: state.user),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: MdbTokens.space32),
                   const Divider(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: MdbTokens.space16),
                   const PasswordForm(),
                 ],
               ),

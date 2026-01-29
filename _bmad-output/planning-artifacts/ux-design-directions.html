@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDB Copilot — Design Directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+  :root {
+    --primary: #7c4dff;
+    --primary-10: #f5f0ff;
+    --primary-50: #ede7f6;
+    --primary-100: #d1c4e9;
+    --primary-200: #b39ddb;
+    --primary-300: #9575cd;
+    --primary-400: #7e57c2;
+    --primary-600: #5e35b1;
+    --primary-700: #512da8;
+    --primary-800: #4527a0;
+    --primary-900: #311b92;
+    --accent: #f3419f;
+    --accent-50: #fce4ec;
+    --accent-100: #f8bbd9;
+    --accent-600: #d81b60;
+    --warn: #dc2626;
+    --success: #16a34a;
+    --success-light: #bbf7d0;
+    --success-surface: #f0fdf4;
+    --alert: #f59e0b;
+    --alert-light: #fde68a;
+    --alert-surface: #fffbeb;
+    --error-surface: #fef2f2;
+
+    --surface: #f8f7fc;
+    --surface-dim: #eeecf4;
+    --surface-container: #f2f0f8;
+    --surface-container-low: #f5f3fb;
+    --surface-container-high: #eceaf2;
+    --surface-bright: #ffffff;
+    --on-surface: #1c1b20;
+    --on-surface-variant: #49454f;
+    --outline: #7a757f;
+    --outline-variant: #cac4d0;
+
+    --elevation-1: 0 1px 3px 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+    --elevation-2: 0 2px 6px 2px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+
+    --radius-xs: 8px;
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--surface);
+    color: var(--on-surface);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .material-symbols-rounded {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  .filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+  /* ===== Page Header ===== */
+  .header {
+    background: var(--surface-bright);
+    border-bottom: 1px solid var(--outline-variant);
+    padding: 24px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  /* ===== Tab Navigation ===== */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 12px 32px;
+    background: var(--surface-bright);
+    border-bottom: 1px solid var(--outline-variant);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    color: var(--on-surface-variant);
+    font-family: inherit;
+  }
+  .tab:hover { background: var(--primary-10); color: var(--primary); }
+  .tab.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 77, 255, 0.3);
+  }
+
+  /* ===== Direction Sections ===== */
+  .direction { display: none; padding: 32px; }
+  .direction.active { display: block; }
+  .direction-title {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .direction-desc {
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    margin-bottom: 32px;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* ===== Phone Frame ===== */
+  .phone-frame {
+    width: 375px;
+    height: 812px;
+    background: var(--surface);
+    border-radius: 44px;
+    border: 2px solid var(--outline-variant);
+    overflow: hidden;
+    box-shadow: 0 20px 60px -15px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.03);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .phone-frame.dark, .desktop-frame.dark {
+    --surface: rgb(30, 35, 52);
+    --surface-dim: rgb(25, 29, 44);
+    --surface-container: rgb(44, 48, 73);
+    --surface-container-low: rgb(37, 41, 62);
+    --surface-container-high: rgb(52, 56, 82);
+    --surface-bright: rgb(44, 48, 73);
+    --on-surface: #e6e0e9;
+    --on-surface-variant: #cac4d0;
+    --outline: #938f99;
+    --outline-variant: rgb(55, 59, 85);
+    --primary: #cfbcff;
+    --primary-10: rgb(35, 30, 65);
+    --primary-50: rgb(50, 45, 80);
+    --primary-100: rgb(60, 55, 95);
+    --primary-700: #cfbcff;
+    --primary-800: #cfbcff;
+    --accent: rgb(208, 99, 222);
+    --accent-btn: rgb(208, 99, 222);
+    --elevation-1: 0 1px 4px 1px rgba(0,0,0,0.25);
+    --elevation-2: 0 2px 8px 2px rgba(0,0,0,0.3);
+    background: var(--surface);
+    border-color: var(--outline-variant);
+  }
+  .dark .btn-filled {
+    background: rgb(208, 99, 222) !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(208, 99, 222, 0.35);
+  }
+  .dark .btn-tonal {
+    background: rgb(52, 56, 82) !important;
+    color: var(--on-surface);
+  }
+  .dark .m3-nav-item.active .m3-nav-icon-wrap {
+    background: rgb(60, 55, 95);
+  }
+  .dark .fab {
+    background: rgb(208, 99, 222) !important;
+    box-shadow: 0 4px 14px rgba(208, 99, 222, 0.4);
+  }
+  .dark .score-high { background: #22c55e; }
+  .dark .score-mid { background: #f59e0b; }
+  .dark .score-low { background: #ef4444; }
+
+  /* ===== Desktop Frame ===== */
+  .desktop-frame {
+    width: 1080px;
+    height: 720px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 2px solid var(--outline-variant);
+    overflow: hidden;
+    box-shadow: 0 20px 60px -15px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: row;
+  }
+
+  /* ===== M3 Navigation Rail ===== */
+  .m3-rail {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    background: var(--surface-container);
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .m3-rail-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+  .m3-rail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 0;
+    width: 100%;
+  }
+  .m3-rail-icon-wrap {
+    width: 56px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-rail-item.active .m3-rail-icon-wrap {
+    background: var(--primary-100);
+  }
+  .m3-rail-item .m3-rail-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--on-surface-variant);
+  }
+  .m3-rail-item.active .m3-rail-label {
+    color: var(--on-surface);
+    font-weight: 600;
+  }
+  .m3-rail-item .material-symbols-rounded {
+    font-size: 24px;
+    color: var(--on-surface-variant);
+  }
+  .m3-rail-item.active .material-symbols-rounded {
+    color: var(--on-surface);
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* Desktop content area */
+  .desktop-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .desktop-topbar {
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .desktop-topbar h2 {
+    font-size: 24px;
+    font-weight: 400;
+    flex: 1;
+    color: var(--on-surface);
+    letter-spacing: -0.01em;
+  }
+  .desktop-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 32px 32px;
+  }
+
+  /* ===== Status Bar ===== */
+  .status-bar {
+    height: 54px;
+    padding: 14px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--on-surface);
+  }
+
+  /* ===== Top App Bar (M3) ===== */
+  .top-app-bar {
+    padding: 4px 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .top-app-bar-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    color: var(--on-surface);
+  }
+  .top-app-bar-icon:hover { background: var(--surface-container-high); }
+  .top-app-bar h2 {
+    font-size: 22px;
+    font-weight: 400;
+    flex: 1;
+    padding: 0 4px;
+    letter-spacing: 0;
+    color: var(--on-surface);
+  }
+  .top-app-bar-large {
+    padding: 0 16px 20px;
+  }
+  .top-app-bar-large h2 {
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--on-surface);
+    letter-spacing: -0.01em;
+  }
+
+  /* ===== Content ===== */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+  }
+
+  /* ===== M3 Cards ===== */
+  .card {
+    background: var(--surface-bright);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--elevation-1);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .card:hover {
+    box-shadow: var(--elevation-2);
+  }
+  .card-filled {
+    background: var(--surface-container);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-outlined {
+    background: var(--surface-bright);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--on-surface);
+  }
+  .card-subtitle {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  /* ===== M3 Chips ===== */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-xs);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .chip-success { background: var(--success-surface); color: var(--success); }
+  .chip-alert { background: var(--alert-surface); color: #92400e; }
+  .chip-error { background: var(--error-surface); color: var(--warn); }
+  .chip-primary { background: var(--primary-50); color: var(--primary-700); }
+
+  /* ===== Score Badge ===== */
+  .score {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .score-high { background: var(--success); }
+  .score-mid { background: var(--alert); }
+  .score-low { background: var(--warn); }
+
+  /* ===== M3 Navigation Bar ===== */
+  .m3-navbar {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 8px 0;
+    height: 80px;
+    background: var(--surface-container);
+    border-top: none;
+  }
+  .m3-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    width: 64px;
+    position: relative;
+  }
+  .m3-nav-icon-wrap {
+    width: 64px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-nav-item.active .m3-nav-icon-wrap {
+    background: var(--primary-100);
+  }
+  .m3-nav-item .m3-nav-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--on-surface-variant);
+    transition: all 0.2s;
+  }
+  .m3-nav-item.active .m3-nav-label {
+    color: var(--on-surface);
+    font-weight: 600;
+  }
+  .m3-nav-item .material-symbols-rounded {
+    font-size: 24px;
+    color: var(--on-surface-variant);
+    transition: all 0.2s;
+  }
+  .m3-nav-item.active .material-symbols-rounded {
+    color: var(--on-surface);
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* ===== M3 Buttons ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+  }
+  .btn-filled {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 1px 3px rgba(124,77,255,0.3);
+  }
+  .btn-filled:hover { box-shadow: 0 4px 12px rgba(124,77,255,0.35); filter: brightness(1.05); }
+  .btn-tonal {
+    background: var(--primary-100);
+    color: var(--primary-800);
+  }
+  .btn-tonal:hover { background: var(--primary-200); }
+  .btn-outlined {
+    background: transparent;
+    border: 1px solid var(--outline);
+    color: var(--primary);
+  }
+  .btn-outlined:hover { background: var(--primary-10); }
+  .btn-text {
+    background: transparent;
+    color: var(--primary);
+    padding: 12px 16px;
+  }
+
+  /* ===== M3 Inputs ===== */
+  .input-group { margin-bottom: 20px; }
+  .input-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .input {
+    width: 100%;
+    padding: 16px;
+    border: 1.5px solid var(--outline-variant);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--surface-bright);
+    color: var(--on-surface);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input::placeholder { color: var(--outline); }
+  .input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+
+  /* ===== Progress ===== */
+  .progress-track {
+    height: 4px;
+    background: var(--surface-container-high);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+  .progress-indicator {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--primary);
+    transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* ===== FAB (M3) ===== */
+  .fab {
+    position: absolute;
+    bottom: 96px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px 3px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  .fab:hover {
+    box-shadow: 0 6px 14px 4px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+  }
+  .fab .material-symbols-rounded { font-size: 28px; }
+
+  /* ===== Alert banners ===== */
+  .alert-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  .alert-warn { background: var(--alert-surface); color: #92400e; }
+  .alert-error { background: var(--error-surface); color: #991b1b; }
+
+  /* ===== Category items ===== */
+  .category-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface-bright);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    box-shadow: var(--elevation-1);
+    transition: box-shadow 0.15s;
+  }
+  .category-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-50);
+    color: var(--primary-700);
+  }
+
+  /* ===== Kanban ===== */
+  .kanban-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 0 16px 8px;
+  }
+  .kanban-col { min-width: 150px; flex-shrink: 0; }
+  .kanban-col-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--on-surface-variant);
+    margin-bottom: 8px;
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kanban-count {
+    background: var(--primary-50);
+    color: var(--primary-700);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .kanban-card {
+    background: var(--surface-bright);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 8px;
+    box-shadow: var(--elevation-1);
+    font-size: 13px;
+  }
+  .kanban-card .kc-title {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--on-surface);
+    margin-bottom: 4px;
+  }
+  .kanban-card .kc-meta {
+    font-size: 12px;
+    color: var(--on-surface-variant);
+  }
+
+  /* ===== Layout ===== */
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .gap-4 { gap: 4px; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .gap-16 { gap: 16px; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .w-full { width: 100%; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-12 { margin-bottom: 12px; }
+  .mb-16 { margin-bottom: 16px; }
+
+  /* ===== Grid ===== */
+  .phones-grid {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phone-label {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ===== Section title inside phone ===== */
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--on-surface);
+    margin-bottom: 10px;
+  }
+
+  /* ===== Divider ===== */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--outline-variant);
+    margin: 16px 0;
+  }
+
+  /* ===== Info Grid ===== */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .info-item-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+  .info-item-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--on-surface);
+  }
+
+  /* ===== Stat card ===== */
+  .stat-card {
+    flex: 1;
+    text-align: center;
+    background: var(--surface-bright);
+    border-radius: var(--radius-sm);
+    padding: 16px 8px;
+    box-shadow: var(--elevation-1);
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Choice chips for forms */
+  .choice-chip {
+    padding: 8px 16px;
+    border-radius: var(--radius-xs);
+    border: 1.5px solid var(--outline-variant);
+    background: var(--surface-bright);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--on-surface);
+  }
+  .choice-chip:hover { border-color: var(--primary); color: var(--primary); }
+  .choice-chip.selected {
+    background: var(--primary-100);
+    border-color: var(--primary);
+    color: var(--primary-800);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>MDB Copilot — Design Directions</h1>
+  <p>Explorez les directions visuelles Material 3 de l'application</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showDirection(0)">1. Dashboard</button>
+  <button class="tab" onclick="showDirection(1)">2. Fiche Annonce</button>
+  <button class="tab" onclick="showDirection(2)">3. Pipeline</button>
+  <button class="tab" onclick="showDirection(3)">4. Guide Visite</button>
+  <button class="tab" onclick="showDirection(4)">5. Synthèse</button>
+  <button class="tab" onclick="showDirection(5)">6. Formulaire</button>
+  <button class="tab" onclick="showDirection(6)">7. Dark Mode</button>
+</div>
+
+<!-- ==================== 1. DASHBOARD ==================== -->
+<div class="direction active" id="dir-0">
+  <div class="direction-title">1. Dashboard — Accueil</div>
+  <div class="direction-desc">Vue d'ensemble du portfolio. Navigation Bar M3 avec indicateur pilule et icônes Material Symbols. FAB accent pour la création rapide.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Light Mode</div>
+      <div class="phone-frame">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+
+        <div class="top-app-bar-large">
+          <div class="top-app-bar" style="padding:0;">
+            <div style="flex:1;"></div>
+            <div class="top-app-bar-icon"><span class="material-symbols-rounded">notifications</span></div>
+          </div>
+          <h2>MDB Copilot</h2>
+        </div>
+
+        <div class="content">
+          <div class="flex gap-8 mb-16">
+            <div class="stat-card">
+              <div class="stat-value" style="color:var(--primary);">7</div>
+              <div class="stat-label">Annonces</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:var(--success);">2</div>
+              <div class="stat-label">Visites</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:var(--accent);">1</div>
+              <div class="stat-label">Offre</div>
+            </div>
+          </div>
+
+          <div class="alert-banner alert-warn">
+            <span class="material-symbols-rounded" style="font-size:20px;color:#d97706;">event</span>
+            <span><strong>2 visites</strong> prévues cette semaine</span>
+          </div>
+
+          <div class="section-title mt-16">Dernières annonces</div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">T3 Rue des Lilas</div>
+                <div class="card-subtitle">75020 Paris · 62 m² · 285 000 €</div>
+              </div>
+              <div class="score score-high">82</div>
+            </div>
+            <div class="flex gap-8 mt-8">
+              <span class="chip chip-success"><span class="material-symbols-rounded" style="font-size:14px;">trending_up</span> Opportunité</span>
+              <span class="chip chip-primary"><span class="material-symbols-rounded" style="font-size:14px;">calendar_today</span> RDV</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Immeuble Rue Voltaire</div>
+                <div class="card-subtitle">93100 Montreuil · 180 m² · 520 000 €</div>
+              </div>
+              <div class="score score-mid">54</div>
+            </div>
+            <div class="flex gap-8 mt-8">
+              <span class="chip chip-alert"><span class="material-symbols-rounded" style="font-size:14px;">search</span> À analyser</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Maison Bd Gambetta</div>
+                <div class="card-subtitle">94200 Ivry · 95 m² · 350 000 €</div>
+              </div>
+              <div class="score score-low">28</div>
+            </div>
+            <div class="flex gap-8 mt-8">
+              <span class="chip chip-error"><span class="material-symbols-rounded" style="font-size:14px;">warning</span> Red flags</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fab">
+          <span class="material-symbols-rounded">add</span>
+        </div>
+
+        <nav class="m3-navbar">
+          <div class="m3-nav-item active">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">home</span></div>
+            <span class="m3-nav-label">Accueil</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">view_kanban</span></div>
+            <span class="m3-nav-label">Pipeline</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">menu_book</span></div>
+            <span class="m3-nav-label">Mémos</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">person</span></div>
+            <span class="m3-nav-label">Profil</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. FICHE ANNONCE ==================== -->
+<div class="direction" id="dir-1">
+  <div class="direction-title">2. Fiche Annonce — Détail</div>
+  <div class="direction-desc">Score hero avec gradient subtil, infos en grille, progressive disclosure. Boutons d'action M3 prominent.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Fiche détaillée</div>
+      <div class="phone-frame">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+        <div class="top-app-bar">
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">arrow_back</span></div>
+          <h2 style="font-size:20px;">T3 Rue des Lilas</h2>
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">more_vert</span></div>
+        </div>
+        <div class="content">
+          <!-- Score Hero -->
+          <div class="card" style="text-align:center;background:linear-gradient(160deg, var(--primary-50) 0%, var(--surface-bright) 100%);">
+            <div style="font-size:52px;font-weight:700;color:var(--primary);letter-spacing:-0.04em;">82</div>
+            <div style="font-size:13px;color:var(--on-surface-variant);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;">Score d'opportunité</div>
+            <div class="progress-track mt-12" style="max-width:180px;margin-left:auto;margin-right:auto;">
+              <div class="progress-indicator" style="width:82%;background:linear-gradient(90deg, var(--primary), var(--accent));"></div>
+            </div>
+            <div class="flex gap-8 mt-16" style="justify-content:center;">
+              <span class="chip chip-success">Prix -15% vs DVF</span>
+              <span class="chip chip-alert">Urgence moyenne</span>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="card">
+            <div class="section-title">Informations clés</div>
+            <div class="info-grid">
+              <div><div class="info-item-label">Surface</div><div class="info-item-value">62 m²</div></div>
+              <div><div class="info-item-label">Prix</div><div class="info-item-value">285 000 €</div></div>
+              <div><div class="info-item-label">Prix/m²</div><div class="info-item-value">4 597 €/m²</div></div>
+              <div><div class="info-item-label">Type</div><div class="info-item-value">Appartement T3</div></div>
+            </div>
+          </div>
+
+          <!-- Agent -->
+          <div class="card-outlined">
+            <div class="flex items-center gap-12">
+              <div style="width:44px;height:44px;border-radius:var(--radius-full);background:var(--primary-50);display:flex;align-items:center;justify-content:center;">
+                <span class="material-symbols-rounded" style="color:var(--primary-700);">person</span>
+              </div>
+              <div>
+                <div style="font-size:15px;font-weight:500;">Marie Dupont</div>
+                <div style="font-size:13px;color:var(--on-surface-variant);">Agence Soleil · 01 23 45 67 89</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="card-filled">
+            <div class="section-title">Notes</div>
+            <div style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;">Succession, vendeur pressé. Potentiel division en T2+studio. Quartier en hausse.</div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col gap-8 mt-24" style="margin-bottom:16px;">
+            <button class="btn btn-filled w-full" style="padding:16px;">
+              <span class="material-symbols-rounded" style="font-size:20px;">explore</span>
+              Lancer la visite
+            </button>
+            <button class="btn btn-tonal w-full">
+              <span class="material-symbols-rounded" style="font-size:20px;">calculate</span>
+              Simuler TVA sur marge
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 3. PIPELINE KANBAN ==================== -->
+<div class="direction" id="dir-2">
+  <div class="direction-title">3. Pipeline Kanban</div>
+  <div class="direction-desc">Colonnes horizontales scrollables. Cartes compactes avec score, prix et statut. Large App Bar M3.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Pipeline</div>
+      <div class="phone-frame">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+        <div class="top-app-bar-large">
+          <div class="top-app-bar" style="padding:0;">
+            <div style="flex:1;"></div>
+            <div class="top-app-bar-icon"><span class="material-symbols-rounded">search</span></div>
+            <div class="top-app-bar-icon"><span class="material-symbols-rounded">filter_list</span></div>
+          </div>
+          <h2>Pipeline</h2>
+        </div>
+        <div class="content" style="padding:0 0 16px;">
+          <div class="kanban-scroll">
+            <div class="kanban-col">
+              <div class="kanban-col-title">Prospection <span class="kanban-count">3</span></div>
+              <div class="kanban-card">
+                <div class="kc-title">T3 Rue des Lilas</div>
+                <div class="kc-meta">285 000 € · 62 m²</div>
+                <div class="mt-8"><span class="chip chip-success" style="font-size:11px;padding:4px 8px;">82</span></div>
+              </div>
+              <div class="kanban-card">
+                <div class="kc-title">Immeuble Voltaire</div>
+                <div class="kc-meta">520 000 € · 180 m²</div>
+                <div class="mt-8"><span class="chip chip-alert" style="font-size:11px;padding:4px 8px;">54</span></div>
+              </div>
+              <div class="kanban-card">
+                <div class="kc-title">Studio Oberkampf</div>
+                <div class="kc-meta">155 000 € · 22 m²</div>
+                <div class="mt-8"><span class="chip chip-primary" style="font-size:11px;padding:4px 8px;">71</span></div>
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">RDV <span class="kanban-count">1</span></div>
+              <div class="kanban-card">
+                <div class="kc-title">T4 Bd Magenta</div>
+                <div class="kc-meta">380 000 € · 78 m²</div>
+                <div class="mt-8"><span class="chip chip-success" style="font-size:11px;padding:4px 8px;">76</span></div>
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">Visite <span class="kanban-count">1</span></div>
+              <div class="kanban-card">
+                <div class="kc-title">Maison Ivry</div>
+                <div class="kc-meta">420 000 € · 95 m²</div>
+                <div class="mt-8"><span class="chip chip-error" style="font-size:11px;padding:4px 8px;">28</span></div>
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">Offre <span class="kanban-count">1</span></div>
+              <div class="kanban-card">
+                <div class="kc-title">T2 République</div>
+                <div class="kc-meta">210 000 € · 38 m²</div>
+                <div class="mt-8"><span class="chip chip-success" style="font-size:11px;padding:4px 8px;">88</span></div>
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">No Go <span class="kanban-count" style="background:var(--error-surface);color:var(--warn);">1</span></div>
+              <div class="kanban-card" style="opacity:0.6;">
+                <div class="kc-title">Maison Gambetta</div>
+                <div class="kc-meta">350 000 € · 110 m²</div>
+                <div class="mt-8"><span class="chip chip-error" style="font-size:11px;padding:4px 8px;">28</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fab">
+          <span class="material-symbols-rounded">add</span>
+        </div>
+
+        <nav class="m3-navbar">
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">home</span></div>
+            <span class="m3-nav-label">Accueil</span>
+          </div>
+          <div class="m3-nav-item active">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">view_kanban</span></div>
+            <span class="m3-nav-label">Pipeline</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">menu_book</span></div>
+            <span class="m3-nav-label">Mémos</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">person</span></div>
+            <span class="m3-nav-label">Profil</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 4. GUIDE VISITE ==================== -->
+<div class="direction" id="dir-3">
+  <div class="direction-title">4. Guide de Visite Interactif</div>
+  <div class="direction-desc">Catégories avec progression linéaire M3. Questions courtes avec boutons de réponse. Indicateur offline.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Vue catégories</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="flex items-center gap-4" style="font-size:12px;color:var(--success);font-weight:500;">
+            <span class="material-symbols-rounded filled" style="font-size:10px;">circle</span> Offline
+          </span>
+        </div>
+        <div class="top-app-bar">
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">arrow_back</span></div>
+          <h2 style="font-size:20px;">Guide de visite</h2>
+        </div>
+        <div class="content">
+          <div style="font-size:13px;color:var(--on-surface-variant);margin-bottom:6px;font-weight:500;">3 sur 7 catégories</div>
+          <div class="progress-track mb-16">
+            <div class="progress-indicator" style="width:43%;"></div>
+          </div>
+
+          <div class="category-item" style="border-left:3px solid var(--success);">
+            <div class="category-icon"><span class="material-symbols-rounded">foundation</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;">Structure</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">8/8 points</div>
+            </div>
+            <span class="material-symbols-rounded filled" style="color:var(--success);">check_circle</span>
+          </div>
+
+          <div class="category-item" style="border-left:3px solid var(--success);">
+            <div class="category-icon"><span class="material-symbols-rounded">bolt</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;">Électricité</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">5/5 points</div>
+            </div>
+            <span class="material-symbols-rounded filled" style="color:var(--success);">check_circle</span>
+          </div>
+
+          <div class="category-item" style="border-left:3px solid var(--warn);">
+            <div class="category-icon"><span class="material-symbols-rounded">plumbing</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;">Plomberie</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">3/6 points</div>
+            </div>
+            <span class="chip chip-error" style="font-size:11px;padding:4px 8px;">1 alerte</span>
+          </div>
+
+          <div class="category-item" style="border-left:3px solid var(--primary);background:var(--primary-10);">
+            <div class="category-icon" style="background:var(--primary-100);"><span class="material-symbols-rounded" style="color:var(--primary-700);">window</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;color:var(--primary-700);">Menuiseries</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">En cours…</div>
+            </div>
+            <span class="material-symbols-rounded" style="color:var(--primary);">arrow_forward</span>
+          </div>
+
+          <div class="category-item" style="opacity:0.45;">
+            <div class="category-icon"><span class="material-symbols-rounded">format_paint</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;">Finitions</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">0/4 points</div>
+            </div>
+          </div>
+
+          <div class="category-item" style="opacity:0.45;">
+            <div class="category-icon"><span class="material-symbols-rounded">straighten</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;">Division</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">0/3 points</div>
+            </div>
+          </div>
+
+          <div class="category-item" style="opacity:0.45;">
+            <div class="category-icon"><span class="material-symbols-rounded">edit_note</span></div>
+            <div style="flex:1;">
+              <div style="font-weight:500;">Notes agent</div>
+              <div style="font-size:12px;color:var(--on-surface-variant);">0/2 points</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px 16px 32px;background:var(--surface-container);">
+          <button class="btn btn-filled w-full" style="padding:16px;">
+            <span class="material-symbols-rounded" style="font-size:20px;">photo_camera</span>
+            Photo + Continuer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="phone-label">Question détaillée</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="flex items-center gap-4" style="font-size:12px;color:var(--success);font-weight:500;">
+            <span class="material-symbols-rounded filled" style="font-size:10px;">circle</span> Offline
+          </span>
+        </div>
+        <div class="top-app-bar">
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">arrow_back</span></div>
+          <h2 style="font-size:20px;">Plomberie</h2>
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">photo_camera</span></div>
+        </div>
+        <div class="content">
+          <div style="font-size:13px;color:var(--on-surface-variant);margin-bottom:6px;font-weight:500;">Question 4 sur 6</div>
+          <div class="progress-track mb-16">
+            <div class="progress-indicator" style="width:66%;"></div>
+          </div>
+
+          <div class="card">
+            <div style="font-size:17px;font-weight:500;margin-bottom:20px;line-height:1.4;">État des canalisations visibles ?</div>
+            <div class="flex flex-col gap-8">
+              <button class="choice-chip w-full" style="text-align:left;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+                <span class="material-symbols-rounded" style="color:var(--success);font-size:20px;">check_circle</span>
+                <span>Bon état</span>
+              </button>
+              <button class="choice-chip w-full" style="text-align:left;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+                <span class="material-symbols-rounded" style="color:var(--alert);font-size:20px;">error</span>
+                <span>Moyen — traces d'usure</span>
+              </button>
+              <button class="choice-chip selected w-full" style="text-align:left;padding:14px 16px;display:flex;align-items:center;gap:12px;background:var(--error-surface);border-color:var(--warn);">
+                <span class="material-symbols-rounded filled" style="color:var(--warn);font-size:20px;">cancel</span>
+                <span style="color:#991b1b;font-weight:600;">Mauvais — fuites / corrosion</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="alert-banner alert-error mt-12">
+            <span class="material-symbols-rounded" style="font-size:20px;color:var(--warn);">warning</span>
+            <div>
+              <strong>Red flag détecté</strong>
+              <div style="font-size:13px;margin-top:2px;">Fuite active sous évier cuisine</div>
+            </div>
+          </div>
+
+          <div class="input-group mt-16">
+            <label class="input-label">Notes complémentaires</label>
+            <input class="input" placeholder="Observations libres…" value="Fuite visible, tuyau cuivre oxydé">
+          </div>
+        </div>
+
+        <div style="padding:12px 16px 32px;background:var(--surface-container);">
+          <div class="flex gap-8 w-full">
+            <button class="btn btn-outlined" style="flex:1;">
+              <span class="material-symbols-rounded" style="font-size:18px;">arrow_back</span> Précédent
+            </button>
+            <button class="btn btn-filled" style="flex:1;">
+              Suivant <span class="material-symbols-rounded" style="font-size:18px;">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 5. SYNTHÈSE POST-VISITE ==================== -->
+<div class="direction" id="dir-4">
+  <div class="direction-title">5. Synthèse Post-Visite</div>
+  <div class="direction-desc">Le moment "aha!" — verdict clair avec gradient de succès, alertes Material, estimation financière et actions immédiates.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Synthèse</div>
+      <div class="phone-frame">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+        <div class="top-app-bar">
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">arrow_back</span></div>
+          <h2 style="font-size:20px;">Synthèse visite</h2>
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">share</span></div>
+        </div>
+        <div class="content">
+          <!-- Verdict -->
+          <div class="card" style="text-align:center;border:2px solid var(--success);background:linear-gradient(160deg, var(--success-surface) 0%, var(--surface-bright) 100%);">
+            <div style="font-size:11px;font-weight:600;color:var(--success);text-transform:uppercase;letter-spacing:0.08em;">Verdict</div>
+            <div style="font-size:40px;font-weight:700;color:var(--success);letter-spacing:-0.03em;margin:4px 0;">GO</div>
+            <div style="font-size:14px;color:var(--on-surface-variant);">Opportunité confirmée avec points d'attention</div>
+          </div>
+
+          <!-- Alerts -->
+          <div class="alert-banner alert-error">
+            <span class="material-symbols-rounded" style="font-size:20px;color:var(--warn);">warning</span>
+            <div><strong>Plomberie</strong><div style="font-size:13px;margin-top:1px;">Fuite active, canalisations à reprendre</div></div>
+          </div>
+          <div class="alert-banner alert-warn">
+            <span class="material-symbols-rounded" style="font-size:20px;color:#d97706;">error</span>
+            <div><strong>Électricité</strong><div style="font-size:13px;margin-top:1px;">Tableau à mettre aux normes</div></div>
+          </div>
+
+          <!-- Financial -->
+          <div class="card">
+            <div class="section-title">Estimation financière</div>
+            <div class="info-grid">
+              <div><div class="info-item-label">Prix achat</div><div class="info-item-value">285 000 €</div></div>
+              <div><div class="info-item-label">Travaux</div><div class="info-item-value" style="color:var(--alert);">45 000 €</div></div>
+              <div><div class="info-item-label">Frais notaire</div><div class="info-item-value">22 000 €</div></div>
+              <div><div class="info-item-label">Revente estimée</div><div class="info-item-value">410 000 €</div></div>
+            </div>
+            <hr class="divider">
+            <div class="flex justify-between items-center">
+              <div style="font-size:14px;font-weight:500;">Marge nette</div>
+              <div>
+                <div style="font-size:22px;font-weight:700;color:var(--success);letter-spacing:-0.02em;">+58 000 €</div>
+                <div style="font-size:12px;color:var(--on-surface-variant);text-align:right;">16,5 %</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Résumé catégories -->
+          <div class="card">
+            <div class="section-title">Par catégorie</div>
+            <div class="flex justify-between items-center" style="padding:8px 0;"><span style="font-size:14px;">Structure</span><span class="chip chip-success" style="padding:4px 10px;">Bon</span></div>
+            <div class="flex justify-between items-center" style="padding:8px 0;"><span style="font-size:14px;">Électricité</span><span class="chip chip-alert" style="padding:4px 10px;">Moyen</span></div>
+            <div class="flex justify-between items-center" style="padding:8px 0;"><span style="font-size:14px;">Plomberie</span><span class="chip chip-error" style="padding:4px 10px;">Mauvais</span></div>
+            <div class="flex justify-between items-center" style="padding:8px 0;"><span style="font-size:14px;">Menuiseries</span><span class="chip chip-success" style="padding:4px 10px;">Bon</span></div>
+            <div class="flex justify-between items-center" style="padding:8px 0;"><span style="font-size:14px;">Finitions</span><span class="chip chip-alert" style="padding:4px 10px;">Moyen</span></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-8 mt-16" style="margin-bottom:16px;">
+            <button class="btn btn-filled" style="flex:2;padding:16px;">
+              <span class="material-symbols-rounded" style="font-size:20px;">check</span> Classer en Go
+            </button>
+            <button class="btn btn-outlined" style="flex:1;padding:16px;border-color:var(--warn);color:var(--warn);">
+              No Go
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 6. FORMULAIRE ==================== -->
+<div class="direction" id="dir-5">
+  <div class="direction-title">6. Création de Fiche</div>
+  <div class="direction-desc">Labels fixes uppercase au-dessus des champs. Inputs arrondis avec focus violet. Choice chips pour la sélection rapide.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Nouvelle annonce</div>
+      <div class="phone-frame">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+        <div class="top-app-bar">
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">close</span></div>
+          <h2 style="font-size:20px;">Nouvelle annonce</h2>
+          <button class="btn btn-text" style="padding:8px 16px;font-size:14px;">Créer</button>
+        </div>
+        <div class="content">
+          <div style="font-size:13px;color:var(--on-surface-variant);margin-bottom:20px;line-height:1.5;">Renseignez les informations essentielles. Vous pourrez compléter plus tard.</div>
+
+          <div class="input-group">
+            <label class="input-label">Titre de l'annonce</label>
+            <input class="input" placeholder="Ex : T3 Rue des Lilas">
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Adresse</label>
+            <input class="input" placeholder="Adresse du bien">
+          </div>
+
+          <div class="flex gap-12">
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Surface (m²)</label>
+              <input class="input" placeholder="62" type="number">
+            </div>
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Prix (€)</label>
+              <input class="input" placeholder="285 000" type="number">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Type de bien</label>
+            <div class="flex gap-8" style="flex-wrap:wrap;">
+              <button class="choice-chip">Appartement</button>
+              <button class="choice-chip selected">Maison</button>
+              <button class="choice-chip">Immeuble</button>
+              <button class="choice-chip">Local</button>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Urgence de vente</label>
+            <div class="flex gap-8">
+              <button class="choice-chip" style="flex:1;text-align:center;">Faible</button>
+              <button class="choice-chip" style="flex:1;text-align:center;">Moyenne</button>
+              <button class="choice-chip selected" style="flex:1;text-align:center;background:var(--error-surface);border-color:var(--warn);color:#991b1b;">Forte</button>
+            </div>
+          </div>
+
+          <hr class="divider">
+          <div class="section-title">Agent immobilier <span style="font-weight:400;color:var(--on-surface-variant);font-size:12px;">(optionnel)</span></div>
+
+          <div class="input-group">
+            <label class="input-label">Nom</label>
+            <input class="input" placeholder="Marie Dupont">
+          </div>
+
+          <div class="flex gap-12" style="margin-bottom:80px;">
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Agence</label>
+              <input class="input" placeholder="Agence Soleil">
+            </div>
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Téléphone</label>
+              <input class="input" placeholder="01 23 45 67 89">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 7. DARK MODE ==================== -->
+<div class="direction" id="dir-6">
+  <div class="direction-title">7. Dark Mode</div>
+  <div class="direction-desc">Palette Indigo/Orchidée sur surfaces sombres M3. Même structure, ambiance apaisée pour l'analyse nocturne.</div>
+  <div class="phones-grid">
+    <div>
+      <div class="phone-label">Dashboard Dark</div>
+      <div class="phone-frame dark">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+        <div class="top-app-bar-large">
+          <div class="top-app-bar" style="padding:0;">
+            <div style="flex:1;"></div>
+            <div class="top-app-bar-icon"><span class="material-symbols-rounded">notifications</span></div>
+          </div>
+          <h2>MDB Copilot</h2>
+        </div>
+        <div class="content">
+          <div class="flex gap-8 mb-16">
+            <div class="stat-card">
+              <div class="stat-value" style="color:var(--primary);">7</div>
+              <div class="stat-label">Annonces</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:#4ade80;">2</div>
+              <div class="stat-label">Visites</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:var(--accent);">1</div>
+              <div class="stat-label">Offre</div>
+            </div>
+          </div>
+
+          <div class="section-title mt-16">Dernières annonces</div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">T3 Rue des Lilas</div>
+                <div class="card-subtitle">75020 Paris · 62 m² · 285 000 €</div>
+              </div>
+              <div class="score score-high">82</div>
+            </div>
+            <div class="flex gap-8 mt-8">
+              <span class="chip" style="background:#064e3b;color:#4ade80;">
+                <span class="material-symbols-rounded" style="font-size:14px;">trending_up</span> Opportunité
+              </span>
+              <span class="chip" style="background:var(--primary-50);color:var(--primary);">
+                <span class="material-symbols-rounded" style="font-size:14px;">calendar_today</span> RDV
+              </span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Immeuble Voltaire</div>
+                <div class="card-subtitle">93100 Montreuil · 180 m² · 520 000 €</div>
+              </div>
+              <div class="score score-mid">54</div>
+            </div>
+            <div class="flex gap-8 mt-8">
+              <span class="chip" style="background:#451a03;color:#fbbf24;">
+                <span class="material-symbols-rounded" style="font-size:14px;">search</span> À analyser
+              </span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Maison Bd Gambetta</div>
+                <div class="card-subtitle">94200 Ivry · 95 m² · 350 000 €</div>
+              </div>
+              <div class="score score-low">28</div>
+            </div>
+            <div class="flex gap-8 mt-8">
+              <span class="chip" style="background:#450a0a;color:#f87171;">
+                <span class="material-symbols-rounded" style="font-size:14px;">warning</span> Red flags
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fab" style="background:var(--accent);box-shadow:0 4px 12px rgba(208,99,222,0.35);">
+          <span class="material-symbols-rounded">add</span>
+        </div>
+
+        <nav class="m3-navbar">
+          <div class="m3-nav-item active">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">home</span></div>
+            <span class="m3-nav-label">Accueil</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">view_kanban</span></div>
+            <span class="m3-nav-label">Pipeline</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">menu_book</span></div>
+            <span class="m3-nav-label">Mémos</span>
+          </div>
+          <div class="m3-nav-item">
+            <div class="m3-nav-icon-wrap"><span class="material-symbols-rounded">person</span></div>
+            <span class="m3-nav-label">Profil</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div>
+      <div class="phone-label">Fiche Dark</div>
+      <div class="phone-frame dark">
+        <div class="status-bar"><span>9:41</span><span style="font-size:13px;">···</span></div>
+        <div class="top-app-bar">
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">arrow_back</span></div>
+          <h2 style="font-size:20px;">T3 Rue des Lilas</h2>
+          <div class="top-app-bar-icon"><span class="material-symbols-rounded">more_vert</span></div>
+        </div>
+        <div class="content">
+          <div class="card" style="text-align:center;background:linear-gradient(160deg, var(--primary-50) 0%, var(--surface-container) 100%);">
+            <div style="font-size:52px;font-weight:700;color:var(--primary);letter-spacing:-0.04em;">82</div>
+            <div style="font-size:13px;color:var(--on-surface-variant);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;">Score d'opportunité</div>
+            <div class="progress-track mt-12" style="max-width:180px;margin-left:auto;margin-right:auto;">
+              <div class="progress-indicator" style="width:82%;background:linear-gradient(90deg, var(--primary), var(--accent));"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Informations clés</div>
+            <div class="info-grid">
+              <div><div class="info-item-label">Surface</div><div class="info-item-value">62 m²</div></div>
+              <div><div class="info-item-label">Prix</div><div class="info-item-value">285 000 €</div></div>
+              <div><div class="info-item-label">Prix/m²</div><div class="info-item-value">4 597 €/m²</div></div>
+              <div><div class="info-item-label">Type</div><div class="info-item-value">Appartement T3</div></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-8 mt-24">
+            <button class="btn btn-filled w-full" style="padding:16px;background:var(--primary);">
+              <span class="material-symbols-rounded" style="font-size:20px;">explore</span>
+              Lancer la visite
+            </button>
+            <button class="btn btn-tonal w-full" style="background:var(--surface-container-high);">
+              <span class="material-symbols-rounded" style="font-size:20px;">calculate</span>
+              Simuler TVA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Desktop with Navigation Rail -->
+    <div style="grid-column: 1 / -1; margin-top: 24px;">
+      <div class="phone-label">Desktop — Navigation Rail</div>
+      <div class="desktop-frame dark" style="width:100%;max-width:960px;height:600px;margin:0 auto;display:flex;border-radius:16px;overflow:hidden;">
+        <!-- Navigation Rail -->
+        <nav class="m3-rail" style="display:flex;flex-direction:column;width:80px;min-width:80px;background:rgb(44,48,73);padding:12px 0;align-items:center;gap:4px;">
+          <div class="m3-rail-fab" style="width:56px;height:56px;border-radius:16px;background:rgb(208,99,222);display:flex;align-items:center;justify-content:center;margin-bottom:20px;cursor:pointer;box-shadow:0 4px 12px rgba(208,99,222,0.35);">
+            <span class="material-symbols-rounded" style="color:#fff;font-size:24px;">add</span>
+          </div>
+          <div class="m3-rail-item active" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;cursor:pointer;">
+            <div class="m3-rail-icon-wrap" style="width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(208,99,222,0.25);">
+              <span class="material-symbols-rounded" style="font-size:24px;color:rgb(208,99,222);font-variation-settings:'FILL' 1;">home</span>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:rgb(208,99,222);">Accueil</span>
+          </div>
+          <div class="m3-rail-item" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;cursor:pointer;">
+            <div class="m3-rail-icon-wrap" style="width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-symbols-rounded" style="font-size:24px;color:rgba(255,255,255,0.7);">view_kanban</span>
+            </div>
+            <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.7);">Pipeline</span>
+          </div>
+          <div class="m3-rail-item" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;cursor:pointer;">
+            <div class="m3-rail-icon-wrap" style="width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-symbols-rounded" style="font-size:24px;color:rgba(255,255,255,0.7);">menu_book</span>
+            </div>
+            <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.7);">Mémos</span>
+          </div>
+          <div class="m3-rail-item" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;cursor:pointer;">
+            <div class="m3-rail-icon-wrap" style="width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-symbols-rounded" style="font-size:24px;color:rgba(255,255,255,0.7);">person</span>
+            </div>
+            <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.7);">Profil</span>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div style="flex:1;display:flex;flex-direction:column;background:rgb(30,35,52);">
+          <!-- Top Bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08);">
+            <h2 style="font-size:22px;font-weight:600;color:#fff;margin:0;">MDB Copilot</h2>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <span class="material-symbols-rounded" style="color:rgba(255,255,255,0.7);font-size:24px;">search</span>
+              <span class="material-symbols-rounded" style="color:rgba(255,255,255,0.7);font-size:24px;">notifications</span>
+              <div style="width:32px;height:32px;border-radius:50%;background:rgb(208,99,222);display:flex;align-items:center;justify-content:center;">
+                <span style="color:#fff;font-size:14px;font-weight:600;">M</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Content -->
+          <div style="flex:1;overflow-y:auto;padding:24px;display:flex;gap:24px;">
+            <!-- Left Column -->
+            <div style="flex:1;display:flex;flex-direction:column;gap:16px;">
+              <!-- Stats Row -->
+              <div style="display:flex;gap:12px;">
+                <div style="flex:1;background:rgb(44,48,73);border-radius:16px;padding:20px;text-align:center;">
+                  <div style="font-size:32px;font-weight:700;color:rgb(208,99,222);">7</div>
+                  <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;">Annonces</div>
+                </div>
+                <div style="flex:1;background:rgb(44,48,73);border-radius:16px;padding:20px;text-align:center;">
+                  <div style="font-size:32px;font-weight:700;color:#4ade80;">2</div>
+                  <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;">Visites</div>
+                </div>
+                <div style="flex:1;background:rgb(44,48,73);border-radius:16px;padding:20px;text-align:center;">
+                  <div style="font-size:32px;font-weight:700;color:rgb(208,99,222);">1</div>
+                  <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;">Offre</div>
+                </div>
+              </div>
+
+              <!-- Listings -->
+              <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);letter-spacing:0.02em;text-transform:uppercase;">Dernières annonces</div>
+              <div style="background:rgb(44,48,73);border-radius:16px;padding:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:16px;font-weight:600;color:#fff;">T3 Rue des Lilas</div>
+                    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:2px;">75020 Paris · 62 m² · 285 000 €</div>
+                  </div>
+                  <div style="width:44px;height:44px;border-radius:12px;background:rgba(74,222,128,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#4ade80;">82</div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                  <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:#064e3b;color:#4ade80;">Opportunité</span>
+                  <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(208,99,222,0.15);color:rgb(208,99,222);">RDV planifié</span>
+                </div>
+              </div>
+              <div style="background:rgb(44,48,73);border-radius:16px;padding:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:16px;font-weight:600;color:#fff;">Immeuble Voltaire</div>
+                    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:2px;">93100 Montreuil · 180 m² · 520 000 €</div>
+                  </div>
+                  <div style="width:44px;height:44px;border-radius:12px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fbbf24;">54</div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                  <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:#451a03;color:#fbbf24;">À analyser</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div style="width:300px;display:flex;flex-direction:column;gap:16px;">
+              <div style="background:rgb(44,48,73);border-radius:16px;padding:20px;">
+                <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:12px;">Activité récente</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:rgb(208,99,222);margin-top:2px;">edit_note</span>
+                    <div>
+                      <div style="font-size:13px;color:#fff;">Note ajoutée</div>
+                      <div style="font-size:12px;color:rgba(255,255,255,0.5);">T3 Rue des Lilas · 2h</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:#4ade80;margin-top:2px;">check_circle</span>
+                    <div>
+                      <div style="font-size:13px;color:#fff;">Visite terminée</div>
+                      <div style="font-size:12px;color:rgba(255,255,255,0.5);">Studio Bastille · 1j</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:#fbbf24;margin-top:2px;">add_circle</span>
+                    <div>
+                      <div style="font-size:13px;color:#fff;">Nouvelle annonce</div>
+                      <div style="font-size:12px;color:rgba(255,255,255,0.5);">Maison Gambetta · 2j</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="background:rgb(44,48,73);border-radius:16px;padding:20px;">
+                <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:12px;">Prochains RDV</div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                  <div style="width:44px;height:44px;border-radius:12px;background:rgba(208,99,222,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <div style="font-size:16px;font-weight:700;color:rgb(208,99,222);">15</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:-2px;">FÉV</div>
+                  </div>
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:#fff;">Visite T3 Lilas</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.5);">14h00 · Avec vendeur</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showDirection(index) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('dir-' + index).classList.add('active');
+  document.querySelectorAll('.tab')[index].classList.add('active');
+}
+</script>
+
+</body>
+</html>

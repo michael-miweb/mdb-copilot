@@ -66,6 +66,24 @@ class AuthRepository {
     }
   }
 
+  Future<String> forgotPassword({required String email}) async {
+    return _remoteSource.forgotPassword(email: email);
+  }
+
+  Future<String> resetPassword({
+    required String token,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    return _remoteSource.resetPassword(
+      token: token,
+      email: email,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+    );
+  }
+
   Future<bool> isAuthenticated() async {
     final token = await _tokenStorage.getToken();
     return token != null;

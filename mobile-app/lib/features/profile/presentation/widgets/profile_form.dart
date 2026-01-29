@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mdb_copilot/core/theme/mdb_tokens.dart';
 import 'package:mdb_copilot/features/auth/data/models/user_model.dart';
 import 'package:mdb_copilot/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:mdb_copilot/features/profile/presentation/cubit/profile_cubit.dart';
@@ -81,11 +82,14 @@ class _ProfileFormState extends State<ProfileForm> {
                 'Modifier le profil',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: MdbTokens.space16),
               AuthTextField(
                 controller: _firstNameController,
                 label: 'Prénom',
+                prefixIcon:
+                    const Icon(Icons.person_outlined),
                 textInputAction: TextInputAction.next,
+                semanticsLabel: 'Prénom',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer votre prénom';
@@ -93,11 +97,14 @@ class _ProfileFormState extends State<ProfileForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: MdbTokens.space16),
               AuthTextField(
                 controller: _lastNameController,
                 label: 'Nom',
+                prefixIcon:
+                    const Icon(Icons.person_outlined),
                 textInputAction: TextInputAction.next,
+                semanticsLabel: 'Nom de famille',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer votre nom';
@@ -105,12 +112,15 @@ class _ProfileFormState extends State<ProfileForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: MdbTokens.space16),
               AuthTextField(
                 controller: _emailController,
                 label: 'Email',
+                prefixIcon:
+                    const Icon(Icons.email_outlined),
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
+                semanticsLabel: 'Adresse email',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer votre email';
@@ -121,18 +131,22 @@ class _ProfileFormState extends State<ProfileForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: isLoading ? null : _onSubmit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Enregistrer'),
+              const SizedBox(height: MdbTokens.space16),
+              Semantics(
+                button: true,
+                label: 'Enregistrer les modifications du profil',
+                child: FilledButton(
+                  onPressed: isLoading ? null : _onSubmit,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Enregistrer'),
+                ),
               ),
             ],
           ),

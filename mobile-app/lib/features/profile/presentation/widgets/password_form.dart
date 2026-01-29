@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mdb_copilot/core/theme/mdb_tokens.dart';
 import 'package:mdb_copilot/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:mdb_copilot/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:mdb_copilot/features/profile/presentation/cubit/profile_state.dart';
@@ -18,6 +19,9 @@ class _PasswordFormState extends State<PasswordForm> {
   final _currentController = TextEditingController();
   final _newController = TextEditingController();
   final _confirmController = TextEditingController();
+  bool _currentVisible = false;
+  bool _newVisible = false;
+  bool _confirmVisible = false;
 
   @override
   void dispose() {
@@ -54,12 +58,26 @@ class _PasswordFormState extends State<PasswordForm> {
                 'Modifier le mot de passe',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: MdbTokens.space16),
               AuthTextField(
                 controller: _currentController,
                 label: 'Mot de passe actuel',
-                obscureText: true,
+                obscureText: !_currentVisible,
+                prefixIcon: const Icon(Icons.lock_outlined),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _currentVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: _currentVisible
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                  onPressed: () =>
+                      setState(() => _currentVisible = !_currentVisible),
+                ),
                 textInputAction: TextInputAction.next,
+                semanticsLabel: 'Mot de passe actuel',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer votre mot de passe actuel';
@@ -67,12 +85,26 @@ class _PasswordFormState extends State<PasswordForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: MdbTokens.space16),
               AuthTextField(
                 controller: _newController,
                 label: 'Nouveau mot de passe',
-                obscureText: true,
+                obscureText: !_newVisible,
+                prefixIcon: const Icon(Icons.lock_outlined),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _newVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: _newVisible
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                  onPressed: () =>
+                      setState(() => _newVisible = !_newVisible),
+                ),
                 textInputAction: TextInputAction.next,
+                semanticsLabel: 'Nouveau mot de passe',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer un nouveau mot de passe';
@@ -84,12 +116,26 @@ class _PasswordFormState extends State<PasswordForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: MdbTokens.space16),
               AuthTextField(
                 controller: _confirmController,
                 label: 'Confirmer le mot de passe',
-                obscureText: true,
+                obscureText: !_confirmVisible,
+                prefixIcon: const Icon(Icons.lock_outlined),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _confirmVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: _confirmVisible
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                  onPressed: () =>
+                      setState(() => _confirmVisible = !_confirmVisible),
+                ),
                 textInputAction: TextInputAction.done,
+                semanticsLabel: 'Confirmer le nouveau mot de passe',
                 validator: (value) {
                   if (value != _newController.text) {
                     return 'Les mots de passe ne correspondent pas';
@@ -97,18 +143,22 @@ class _PasswordFormState extends State<PasswordForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: isLoading ? null : _onSubmit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Changer le mot de passe'),
+              const SizedBox(height: MdbTokens.space16),
+              Semantics(
+                button: true,
+                label: 'Changer le mot de passe',
+                child: OutlinedButton(
+                  onPressed: isLoading ? null : _onSubmit,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Changer le mot de passe'),
+                ),
               ),
             ],
           ),

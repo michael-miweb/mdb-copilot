@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mdb_copilot/core/theme/mdb_tokens.dart';
 import 'package:mdb_copilot/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:mdb_copilot/features/auth/presentation/cubit/auth_state.dart';
 
@@ -11,6 +12,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
@@ -27,27 +30,33 @@ class HomePage extends StatelessWidget {
             actions: [
               if (user != null && user.role == 'owner')
                 IconButton(
-                  onPressed: () => context.push('/invitations'),
-                  icon: const Icon(Icons.group_add),
+                  onPressed: () => context.go('/more/invitations'),
+                  icon: const Icon(Icons.group_add_outlined),
                   tooltip: 'Invitations',
                 ),
               IconButton(
-                onPressed: () => context.push('/profile'),
-                icon: const Icon(Icons.person),
+                onPressed: () => context.go('/more/profile'),
+                icon: const Icon(Icons.person_outlined),
+                tooltip: 'Profil',
               ),
-              IconButton(
-                onPressed: isLoading
-                    ? null
-                    : () => unawaited(
-                          context.read<AuthCubit>().logout(),
-                        ),
-                icon: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.logout),
+              Semantics(
+                button: true,
+                label: 'Se déconnecter',
+                child: IconButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => unawaited(
+                            context.read<AuthCubit>().logout(),
+                          ),
+                  icon: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.logout_outlined),
+                  tooltip: 'Se déconnecter',
+                ),
               ),
             ],
           ),
@@ -57,13 +66,17 @@ class HomePage extends StatelessWidget {
               children: [
                 Text(
                   'Bienvenue${user != null ? ', ${user.firstName}' : ''} !',
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: theme.textTheme.headlineMedium,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: MdbTokens.space16),
                 if (user != null)
                   Text(
                     user.email,
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: .7,
+                      ),
+                    ),
                   ),
               ],
             ),

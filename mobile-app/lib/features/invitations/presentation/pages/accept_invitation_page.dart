@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mdb_copilot/core/api/token_storage.dart';
+import 'package:mdb_copilot/core/theme/mdb_tokens.dart';
 import 'package:mdb_copilot/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:mdb_copilot/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:mdb_copilot/features/invitations/presentation/cubit/invitation_cubit.dart';
@@ -29,6 +30,8 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
   final _lastNameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  bool _passwordVisible = false;
+  bool _confirmVisible = false;
 
   @override
   void dispose() {
@@ -55,6 +58,8 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocConsumer<InvitationCubit, InvitationState>(
       listener: (context, state) async {
         if (state is InvitationAccepted) {
@@ -66,8 +71,22 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
         } else if (state is InvitationError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.error_outlined,
+                    color: theme.colorScheme.onError,
+                  ),
+                  const SizedBox(width: MdbTokens.space8),
+                  Expanded(child: Text(state.message)),
+                ],
+              ),
+              backgroundColor: theme.colorScheme.error,
+              action: SnackBarAction(
+                label: 'Réessayer',
+                textColor: theme.colorScheme.onError,
+                onPressed: () {},
+              ),
             ),
           );
         }
@@ -80,22 +99,40 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
             title: const Text("Accepter l'invitation"),
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(MdbTokens.space16),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Créez votre compte pour rejoindre MDB Copilot',
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(MdbTokens.space16),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.group_add_outlined,
+                            size: 48,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(height: MdbTokens.space8),
+                          Text(
+                            'Créez votre compte pour rejoindre '
+                            'MDB Copilot',
+                            style: theme.textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: MdbTokens.space24),
                   AuthTextField(
                     controller: _firstNameController,
                     label: 'Prénom',
+                    prefixIcon: const Icon(Icons.person_outlined),
                     textInputAction: TextInputAction.next,
+                    semanticsLabel: 'Prénom',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Le prénom est requis';
@@ -103,11 +140,13 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: MdbTokens.space16),
                   AuthTextField(
                     controller: _lastNameController,
                     label: 'Nom',
+                    prefixIcon: const Icon(Icons.person_outlined),
                     textInputAction: TextInputAction.next,
+                    semanticsLabel: 'Nom de famille',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Le nom est requis';
@@ -115,12 +154,27 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: MdbTokens.space16),
                   AuthTextField(
                     controller: _passwordController,
                     label: 'Mot de passe',
-                    obscureText: true,
+                    obscureText: !_passwordVisible,
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _passwordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: _passwordVisible
+                            ? theme.colorScheme.primary
+                            : null,
+                      ),
+                      onPressed: () => setState(
+                        () => _passwordVisible = !_passwordVisible,
+                      ),
+                    ),
                     textInputAction: TextInputAction.next,
+                    semanticsLabel: 'Mot de passe',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Le mot de passe est requis';
@@ -132,13 +186,28 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: MdbTokens.space16),
                   AuthTextField(
                     controller: _confirmController,
                     label: 'Confirmer le mot de passe',
-                    obscureText: true,
+                    obscureText: !_confirmVisible,
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _confirmVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: _confirmVisible
+                            ? theme.colorScheme.primary
+                            : null,
+                      ),
+                      onPressed: () => setState(
+                        () => _confirmVisible = !_confirmVisible,
+                      ),
+                    ),
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _onSubmit(),
+                    semanticsLabel: 'Confirmer le mot de passe',
                     validator: (value) {
                       if (value != _passwordController.text) {
                         return 'Les mots de passe ne correspondent pas';
@@ -146,18 +215,22 @@ class _AcceptInvitationPageState extends State<AcceptInvitationPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: isLoading ? null : _onSubmit,
-                    child: isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('Accepter et créer mon compte'),
+                  const SizedBox(height: MdbTokens.space24),
+                  Semantics(
+                    button: true,
+                    label: 'Accepter et créer mon compte',
+                    child: FilledButton(
+                      onPressed: isLoading ? null : _onSubmit,
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Accepter et créer mon compte'),
+                    ),
                   ),
                 ],
               ),

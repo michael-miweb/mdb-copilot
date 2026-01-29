@@ -1,8 +1,12 @@
 ---
-stepsCompleted: [1, 2, 3]
+stepsCompleted: [1, 2, 3, 4]
+status: 'complete'
+revisedAt: '2026-01-29'
+revisionNote: 'UX Design Specification integrated — AR13-AR18 added'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/architecture.md
+  - _bmad-output/planning-artifacts/ux-design-specification.md
 ---
 
 # mdb-tools - Epic Breakdown
@@ -90,8 +94,14 @@ This document provides the complete epic and story breakdown for mdb-tools, deco
 - **AR3 :** Drift (SQLite + SQLCipher) pour DB locale offline-first
 - **AR4 :** Sanctum RBAC avec token abilities (owner, guest-read, guest-extended)
 - **AR5 :** Repository pattern obligatoire (abstraction local/remote)
-- **AR6 :** `adaptive_platform_ui` pour rendu iOS 26+ / Material adaptatif
-- **AR7 :** Package `mdb_ui` pour widgets métier MDB
+- **AR6 :** Material 3 pur + `flutter_adaptive_scaffold` (NavigationBar < 600dp / NavigationRail ≥ 600dp)
+- **AR7 :** Package `mdb_ui` : 7 composants custom (ScoreCard, KanbanBoard/Column/Card, VisitGuideCategory, GuidedQuestion, PostVisitSummary, DVFComparator, OfflineSyncIndicator)
+- **AR13 :** Palette Violet/Magenta (light, primary #7c4dff, accent #f3419f) + Indigo/Orchidée (dark, bg rgb(30,35,52), accent rgb(208,99,222))
+- **AR14 :** Font Inter (Google Fonts) + Material Symbols Rounded (outlined default, filled active)
+- **AR15 :** WCAG 2.1 AA : contraste ≥ 4.5:1, touch targets 48×48dp, Semantics sur tous composants custom
+- **AR16 :** Labels fixes au-dessus des inputs (pas de floating labels), border-radius max (pills boutons, 16px cards, 12px inputs)
+- **AR17 :** 1 seul Filled Button par écran, FAB uniquement Dashboard/Pipeline, sauvegarde automatique formulaires longs
+- **AR18 :** Empty states avec CTA, skeleton screens pour loading, aucune interruption pendant visite terrain
 - **AR8 :** Sync engine : delta incrémental via `updated_at`, last-write-wins, `POST /api/sync`
 - **AR9 :** UUID v4 pour tous les IDs d'entités
 - **AR10 :** API REST JSON, pas de versioning, Scramble OpenAPI auto-doc
