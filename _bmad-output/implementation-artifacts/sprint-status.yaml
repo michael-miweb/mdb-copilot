@@ -54,11 +54,12 @@ development_status:
   1-3-invitation-utilisateurs-role: done  # UX design system integrated
   epic-1-retrospective: optional
 
-  # Epic 2: Fiches Annonces (FR5-FR10)
-  epic-2: backlog
-  2-1-creation-fiche-annonce: ready-for-dev
-  2-2-consultation-liste-fiches: ready-for-dev
-  2-3-modification-suppression-fiche: ready-for-dev
+  # Epic 2: Fiches Annonces & Carnet d'Adresses (FR5-FR10, FR50-FR52)
+  epic-2: done  # Split name → first_name/last_name terminé, toutes stories complètes
+  2-1a-carnet-adresses: done  # CRUD contacts professionnels (FR50, FR51, FR52) + split first_name/last_name
+  2-1b-creation-fiche-annonce: done
+  2-2-consultation-liste-fiches: done
+  2-3-modification-suppression-fiche: done
   epic-2-retrospective: optional
 
   # Epic 3: Pipeline Kanban (FR13-FR15)

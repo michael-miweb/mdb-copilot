@@ -24,7 +24,7 @@ This document provides the complete epic and story breakdown for mdb-tools, deco
 - **FR3 :** Le propriétaire peut inviter des utilisateurs avec un rôle (consultation, étendu)
 - **FR4 :** L'utilisateur invité peut accéder uniquement aux données autorisées par son rôle
 - **FR5 :** L'utilisateur peut créer une fiche annonce avec saisie manuelle (adresse, surface, prix, type de bien)
-- **FR6 :** L'utilisateur peut renseigner les informations de l'agent immobilier (nom, agence, téléphone)
+- **FR6 :** L'utilisateur peut associer un agent immobilier à une fiche annonce en le sélectionnant depuis le carnet d'adresses (filtre type "agent immobilier") ou en créant un nouveau contact inline
 - **FR7 :** L'utilisateur peut indiquer le niveau d'urgence de vente
 - **FR8 :** L'utilisateur peut ajouter des notes libres à une fiche annonce
 - **FR9 :** L'utilisateur peut modifier et supprimer une fiche annonce
@@ -68,6 +68,9 @@ This document provides the complete epic and story breakdown for mdb-tools, deco
 - **FR47 :** L'utilisateur peut consulter les règles de plus-value professionnelle
 - **FR48 :** L'utilisateur peut consulter les différents régimes d'imposition applicables
 - **FR49 :** Le système alerte l'utilisateur sur les délais de revente fiscaux
+- **FR50 :** L'utilisateur peut gérer un carnet d'adresses de contacts professionnels (agents immobiliers, artisans, notaires, courtiers, etc.)
+- **FR51 :** L'utilisateur peut créer, consulter, modifier et supprimer un contact (nom, entreprise/agence, téléphone, email, type de contact, notes)
+- **FR52 :** Lors de la création ou modification d'une fiche annonce, l'utilisateur peut sélectionner un agent immobilier existant via liste déroulante (filtrée par type "agent immobilier") ou en créer un nouveau directement
 
 ### NonFunctional Requirements
 
@@ -161,6 +164,9 @@ This document provides the complete epic and story breakdown for mdb-tools, deco
 | FR47 | Epic 10 | Plus-value professionnelle |
 | FR48 | Epic 10 | Régimes d'imposition |
 | FR49 | Epic 10 | Alertes délais revente |
+| FR50 | Epic 2 | Carnet d'adresses contacts professionnels |
+| FR51 | Epic 2 | CRUD contacts (nom, entreprise, téléphone, email, type, notes) |
+| FR52 | Epic 2 | Sélecteur agent immobilier depuis carnet d'adresses dans fiche annonce |
 
 ## Epic List
 
@@ -172,9 +178,9 @@ L'environnement de développement et de production est opérationnel : monorepo,
 L'utilisateur peut créer un compte, se connecter et gérer son profil. L'architecture multi-utilisateur et RBAC est en place.
 **FRs couverts :** FR1, FR2, FR3, FR4
 
-### Epic 2 : Fiches Annonces
-L'utilisateur peut créer, consulter, modifier et supprimer des fiches annonces avec toutes les informations d'un bien.
-**FRs couverts :** FR5, FR6, FR7, FR8, FR9, FR10
+### Epic 2 : Fiches Annonces & Carnet d'Adresses
+L'utilisateur peut gérer un carnet d'adresses de contacts professionnels et créer, consulter, modifier et supprimer des fiches annonces avec toutes les informations d'un bien, en associant un agent immobilier depuis le carnet d'adresses.
+**FRs couverts :** FR5, FR6, FR7, FR8, FR9, FR10, FR50, FR51, FR52
 
 ### Epic 3 : Pipeline Kanban
 L'utilisateur peut visualiser toutes ses annonces dans un pipeline visuel et suivre la progression de chaque projet.
@@ -347,11 +353,41 @@ So that je peux collaborer avec des partenaires tout en contrôlant leur accès.
 **Then** il peut consulter et modifier les fiches selon les permissions étendues
 **And** il ne peut pas inviter d'autres utilisateurs ni modifier les paramètres du compte owner
 
-## Epic 2 : Fiches Annonces
+## Epic 2 : Fiches Annonces & Carnet d'Adresses
 
-L'utilisateur peut créer, consulter, modifier et supprimer des fiches annonces avec toutes les informations d'un bien.
+L'utilisateur peut gérer un carnet d'adresses de contacts professionnels et créer, consulter, modifier et supprimer des fiches annonces avec toutes les informations d'un bien, en associant un agent immobilier depuis le carnet d'adresses.
 
-### Story 2.1 : Création d'une fiche annonce
+### Story 2.1A : Carnet d'adresses — CRUD contacts professionnels
+
+As a utilisateur,
+I want gérer un carnet d'adresses de contacts professionnels (agents immobiliers, artisans, notaires, courtiers, etc.),
+So that je centralise mes interlocuteurs et les réutilise facilement dans mes fiches annonces et projets.
+
+**Acceptance Criteria:**
+
+**Given** un utilisateur connecté
+**When** il accède au carnet d'adresses
+**Then** la liste de tous ses contacts est affichée, triée par nom
+**And** un filtre par type de contact est disponible (agent immobilier, artisan, notaire, courtier, autre)
+
+**Given** le carnet d'adresses
+**When** l'utilisateur crée un nouveau contact (nom, entreprise/agence, téléphone, email, type de contact, notes)
+**Then** le contact est créé avec un UUID v4
+**And** le contact est stocké localement via Drift et synchronisé au serveur
+**And** le champ "type de contact" est obligatoire, les autres champs sauf nom sont optionnels
+
+**Given** un contact existant
+**When** l'utilisateur modifie ses informations
+**Then** les modifications sont enregistrées localement et synchronisées
+**And** le champ `updated_at` est mis à jour
+
+**Given** un contact existant
+**When** l'utilisateur choisit de le supprimer
+**Then** une confirmation est demandée
+**And** si le contact est associé à des fiches annonces, un avertissement le signale
+**And** si confirmé, le contact est soft-deleted (marqué `deleted_at`)
+
+### Story 2.1B : Création d'une fiche annonce
 
 As a utilisateur,
 I want créer une fiche annonce avec les informations du bien et de l'agent,
@@ -364,10 +400,16 @@ So that je centralise toutes les données d'une opportunité immobilière.
 **Then** une fiche annonce est créée avec un UUID v4
 **And** la fiche est stockée localement via Drift et synchronisée au serveur
 
+**Given** le formulaire de création, section agent immobilier
+**When** l'utilisateur ouvre le sélecteur d'agent
+**Then** une liste déroulante affiche uniquement les contacts de type "agent immobilier" du carnet d'adresses
+**And** un bouton "Créer un nouveau contact" permet d'ajouter un agent directement sans quitter le formulaire
+**And** le champ agent est optionnel
+
 **Given** le formulaire de création
-**When** l'utilisateur renseigne les informations agent (nom, agence, téléphone)
-**Then** ces informations sont enregistrées dans la fiche
-**And** les champs agent sont optionnels
+**When** l'utilisateur sélectionne un agent existant
+**Then** la fiche annonce est liée au contact via sa FK `contact_id`
+**And** les informations de l'agent (nom, agence, téléphone) s'affichent en lecture seule sous le sélecteur
 
 **Given** le formulaire de création
 **When** l'utilisateur sélectionne un niveau d'urgence de vente (faible, moyen, élevé)
@@ -393,7 +435,7 @@ So that j'ai une vue d'ensemble de mes opportunités.
 
 **Given** la liste des fiches
 **When** l'utilisateur tapote sur une fiche
-**Then** l'écran détail affiche toutes les informations : bien, agent, urgence, notes
+**Then** l'écran détail affiche toutes les informations : bien, agent immobilier associé (depuis le carnet d'adresses), urgence, notes
 
 ### Story 2.3 : Modification et suppression d'une fiche annonce
 

@@ -84,12 +84,13 @@ documentCounts:
 
 **Ressources :** Développeur solo (Michael), full-stack Flutter + backend Dart.
 
-### MVP Feature Set (Phase 1) — 13 capabilities, livrées en bloc
+### MVP Feature Set (Phase 1) — 14 capabilities, livrées en bloc
 
 | # | Feature | Justification MVP |
 |---|---------|-------------------|
 | 1 | Authentification | Pré-requis technique, multi-utilisateur ready |
-| 2 | Fiches annonces | Cœur du produit — sans fiche, pas de workflow |
+| 2a | Carnet d'adresses | Centralisation des contacts professionnels (agents, artisans, notaires) — pré-requis fiches annonces |
+| 2b | Fiches annonces | Cœur du produit — sans fiche, pas de workflow |
 | 3 | Score d'opportunité | Screening rapide, évite les visites inutiles |
 | 4 | Pipeline Kanban | Vue d'ensemble, suivi progression |
 | 5 | Checklist pré-visite | Préparation structurée, zéro oubli |
@@ -253,10 +254,16 @@ documentCounts:
 - **FR3 :** Le propriétaire peut inviter des utilisateurs avec un rôle (consultation, étendu)
 - **FR4 :** L'utilisateur invité peut accéder uniquement aux données autorisées par son rôle
 
+### Carnet d'Adresses
+
+- **FR50 :** L'utilisateur peut gérer un carnet d'adresses de contacts professionnels (agents immobiliers, artisans, notaires, courtiers, etc.)
+- **FR51 :** L'utilisateur peut créer, consulter, modifier et supprimer un contact (nom, entreprise/agence, téléphone, email, type de contact, notes)
+- **FR52 :** Lors de la création ou modification d'une fiche annonce, l'utilisateur peut sélectionner un agent immobilier existant via liste déroulante (filtrée par type "agent immobilier") ou en créer un nouveau directement
+
 ### Fiches Annonces
 
 - **FR5 :** L'utilisateur peut créer une fiche annonce avec saisie manuelle (adresse, surface, prix, type de bien)
-- **FR6 :** L'utilisateur peut renseigner les informations de l'agent immobilier (nom, agence, téléphone)
+- **FR6 :** L'utilisateur peut associer un agent immobilier à une fiche annonce en le sélectionnant depuis le carnet d'adresses (filtre type "agent immobilier") ou en créant un nouveau contact inline
 - **FR7 :** L'utilisateur peut indiquer le niveau d'urgence de vente
 - **FR8 :** L'utilisateur peut ajouter des notes libres à une fiche annonce
 - **FR9 :** L'utilisateur peut modifier et supprimer une fiche annonce

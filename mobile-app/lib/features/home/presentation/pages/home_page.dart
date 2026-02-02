@@ -60,15 +60,16 @@ class HomePage extends StatelessWidget {
               ),
             ],
           ),
-          body: Center(
+          body: Padding(
+            padding: const EdgeInsets.all(MdbTokens.space16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Bienvenue${user != null ? ', ${user.firstName}' : ''} !',
                   style: theme.textTheme.headlineMedium,
                 ),
-                const SizedBox(height: MdbTokens.space16),
+                const SizedBox(height: MdbTokens.space4),
                 if (user != null)
                   Text(
                     user.email,
@@ -78,6 +79,22 @@ class HomePage extends StatelessWidget {
                       ),
                     ),
                   ),
+                const SizedBox(height: MdbTokens.space32),
+                Text(
+                  'Accès rapide',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: MdbTokens.space12),
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    leading: const Icon(Icons.home_work_outlined),
+                    title: const Text('Mes annonces'),
+                    subtitle: const Text('Consulter et gérer vos fiches'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/properties'),
+                  ),
+                ),
               ],
             ),
           ),

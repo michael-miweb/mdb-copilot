@@ -16,6 +16,16 @@ import 'package:mdb_copilot/features/invitations/presentation/pages/invitations_
 import 'package:mdb_copilot/features/invitations/presentation/pages/send_invitation_page.dart';
 import 'package:mdb_copilot/features/more/presentation/pages/more_page.dart';
 import 'package:mdb_copilot/features/profile/presentation/pages/profile_page.dart';
+import 'package:mdb_copilot/features/contacts/data/models/contact_model.dart';
+import 'package:mdb_copilot/features/contacts/presentation/pages/contact_detail_page.dart';
+import 'package:mdb_copilot/features/contacts/presentation/pages/contacts_list_page.dart';
+import 'package:mdb_copilot/features/contacts/presentation/pages/create_contact_page.dart';
+import 'package:mdb_copilot/features/contacts/presentation/pages/edit_contact_page.dart';
+import 'package:mdb_copilot/features/properties/data/models/property_model.dart';
+import 'package:mdb_copilot/features/properties/presentation/pages/create_property_page.dart';
+import 'package:mdb_copilot/features/properties/presentation/pages/edit_property_page.dart';
+import 'package:mdb_copilot/features/properties/presentation/pages/properties_list_page.dart';
+import 'package:mdb_copilot/features/properties/presentation/pages/property_detail_page.dart';
 
 GoRouter createRouter(AuthCubit authCubit, TokenStorage tokenStorage) {
   return GoRouter(
@@ -98,7 +108,95 @@ GoRouter createRouter(AuthCubit authCubit, TokenStorage tokenStorage) {
               ),
             ],
           ),
-          // Branch 1: Pipeline (placeholder)
+          // Branch 1: Annonces
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/properties',
+                builder: (context, state) =>
+                    const PropertiesListPage(),
+                routes: [
+                  GoRoute(
+                    path: 'create',
+                    builder: (context, state) =>
+                        const CreatePropertyPage(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return PropertyDetailPage(propertyId: id);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        redirect: (context, state) {
+                          if (state.extra == null) {
+                            final id =
+                                state.pathParameters['id']!;
+                            return '/properties/$id';
+                          }
+                          return null;
+                        },
+                        builder: (context, state) {
+                          final property =
+                              state.extra! as PropertyModel;
+                          return EditPropertyPage(
+                            property: property,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Branch 2: Contacts
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/contacts',
+                builder: (context, state) =>
+                    const ContactsListPage(),
+                routes: [
+                  GoRoute(
+                    path: 'create',
+                    builder: (context, state) =>
+                        const CreateContactPage(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return ContactDetailPage(contactId: id);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        redirect: (context, state) {
+                          if (state.extra == null) {
+                            final id =
+                                state.pathParameters['id']!;
+                            return '/contacts/$id';
+                          }
+                          return null;
+                        },
+                        builder: (context, state) {
+                          final contact =
+                              state.extra! as ContactModel;
+                          return EditContactPage(
+                            contact: contact,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Branch 3: Pipeline (placeholder)
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -109,7 +207,7 @@ GoRouter createRouter(AuthCubit authCubit, TokenStorage tokenStorage) {
               ),
             ],
           ),
-          // Branch 2: Plus (profile, invitations)
+          // Branch 4: Plus (profile, invitations)
           StatefulShellBranch(
             routes: [
               GoRoute(
