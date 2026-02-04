@@ -1,8 +1,9 @@
-# generated: 2026-01-27
+# generated: 2026-02-03
 # project: mdb-tools
 # project_key: mdb-tools
 # tracking_system: file-system
 # story_location: _bmad-output/implementation-artifacts
+# pivot_note: Pivot technologique Flutter → React Native + React Web (2026-02-03)
 
 # STATUS DEFINITIONS:
 # ==================
@@ -10,10 +11,6 @@
 #   - backlog: Epic not yet started
 #   - in-progress: Epic actively being worked on
 #   - done: All stories in epic completed
-#
-# Epic Status Transitions:
-#   - backlog → in-progress: Automatically when first story is created (via create-story)
-#   - in-progress → done: Manually when all stories reach 'done' status
 #
 # Story Status:
 #   - backlog: Story only exists in epic file
@@ -29,94 +26,155 @@
 # WORKFLOW NOTES:
 # ===============
 # - Epic transitions to 'in-progress' automatically when first story is created
-# - Stories can be worked in parallel if team capacity allows
-# - SM typically creates next story after previous one is 'done' to incorporate learnings
-# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - All stories have been created and are ready for React Native + React Web implementation
+# - Old Flutter-based story files exist but are superseded by new React-based files
 
-generated: 2026-01-27
+generated: 2026-02-03
 project: mdb-tools
 project_key: mdb-tools
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 
 development_status:
+  # ====================
   # Epic 0: Infrastructure & DevOps
-  epic-0: done
-  0-1-initialisation-monorepo: done
-  0-2-docker-production-deploiement: done
-  0-3-configuration-qualite-locale-phpstorm: done
+  # React Native + Expo (mobile), React + Vite (web), Laravel 12 backend
+  # ====================
+  epic-0: in-progress
+  0-1-initialisation-monorepo-projets-starter: done
+  0-2-configuration-package-shared: ready-for-dev
+  0-3-configuration-docker-production-deploiement: ready-for-dev
+  0-4-configuration-qualite-code-linting: ready-for-dev
+  0-5-configuration-design-system-theme: ready-for-dev
+  0-6-configuration-infrastructure-tests: ready-for-dev
+  0-7-service-scraping-backend: ready-for-dev
   epic-0-retrospective: optional
 
-  # Epic 1: Authentification & Gestion de compte (FR1-FR4)
-  epic-1: done  # UX Design System intégré + forgot/reset password + responsive desktop
-  1-1-inscription-connexion: done  # Auth complète + forgot/reset password + StatusBanner + AuthLayout responsive
-  1-2-gestion-profil: done  # UX design system integrated
-  1-3-invitation-utilisateurs-role: done  # UX design system integrated
+  # ====================
+  # Epic 1: Authentification & Gestion de compte
+  # FR1-FR6
+  # ====================
+  epic-1: backlog
+  1-1-inscription-utilisateur: ready-for-dev
+  1-2-connexion-deconnexion: ready-for-dev
+  1-3-reinitialisation-mot-de-passe: ready-for-dev
+  1-4-gestion-profil-utilisateur: ready-for-dev
+  1-5-invitation-utilisateurs-avec-role: ready-for-dev
+  1-6-acces-restreint-par-role: ready-for-dev
   epic-1-retrospective: optional
 
-  # Epic 2: Fiches Annonces & Carnet d'Adresses (FR5-FR10, FR50-FR52)
-  epic-2: done  # Split name → first_name/last_name terminé, toutes stories complètes
-  2-1a-carnet-adresses: done  # CRUD contacts professionnels (FR50, FR51, FR52) + split first_name/last_name
-  2-1b-creation-fiche-annonce: done
-  2-2-consultation-liste-fiches: done
-  2-3-modification-suppression-fiche: done
+  # ====================
+  # Epic 2: Carnet d'adresses & Fiches annonces
+  # FR9-FR20
+  # ====================
+  epic-2: backlog
+  2-1-crud-carnet-adresses: ready-for-dev
+  2-2-creation-fiche-annonce-saisie-manuelle: ready-for-dev
+  2-3-creation-fiche-annonce-import-lien: ready-for-dev
+  2-4-import-lien-extraction-partielle: ready-for-dev
+  2-5-consultation-liste-fiches: ready-for-dev
+  2-6-modification-suppression-fiche: ready-for-dev
   epic-2-retrospective: optional
 
-  # Epic 3: Pipeline Kanban (FR13-FR15)
+  # ====================
+  # Epic 3: Pipeline Kanban
+  # FR24-FR26
+  # ====================
   epic-3: backlog
   3-1-visualisation-pipeline-kanban: ready-for-dev
   3-2-deplacement-annonces-pipeline: ready-for-dev
   3-3-filtres-tri-pipeline: ready-for-dev
   epic-3-retrospective: optional
 
-  # Epic 4: Checklist Pré-visite (FR16-FR18)
+  # ====================
+  # Epic 4: Checklist Pré-visite
+  # FR27-FR29
+  # ====================
   epic-4: backlog
   4-1-generation-auto-checklist: ready-for-dev
   4-2-consultation-cochage-checklist: ready-for-dev
   epic-4-retrospective: optional
 
-  # Epic 5: Guide de Visite Interactif (FR19-FR23)
+  # ====================
+  # Epic 5: Guide de Visite Interactif
+  # FR30-FR34
+  # ====================
   epic-5: backlog
-  5-1-parcours-guide-visite: ready-for-dev
-  5-2-photos-contextualisees-notes: ready-for-dev
+  5-1-parcours-guide-visite-par-categorie: ready-for-dev
+  5-2-reponses-questions-guidees: ready-for-dev
+  5-3-photos-contextualisees-notes-agent: ready-for-dev
+  5-4-mode-offline-guide-visite: ready-for-dev
   epic-5-retrospective: optional
 
-  # Epic 6: Synthèse Post-visite (FR24-FR27)
+  # ====================
+  # Epic 6: Synthèse Post-visite
+  # FR35-FR39
+  # ====================
   epic-6: backlog
-  6-1-generation-synthese-post-visite: ready-for-dev
-  6-2-alertes-estimation-marge: ready-for-dev
+  6-1-generation-automatique-synthese-post-visite: ready-for-dev
+  6-2-alertes-points-critiques-red-flags: ready-for-dev
+  6-3-estimation-marge-previsionnelle: ready-for-dev
+  6-4-decision-go-nogo-liens-memo-contextuels: ready-for-dev
   epic-6-retrospective: optional
 
-  # Epic 7: Score d'Opportunité (FR11-FR12)
+  # ====================
+  # Epic 7: Onboarding
+  # FR7-FR8
+  # ====================
   epic-7: backlog
-  7-1-calcul-affichage-score: ready-for-dev
+  7-1-ecran-accueil-premiere-utilisation: ready-for-dev
+  7-2-tour-guide-fonctionnalites: ready-for-dev
   epic-7-retrospective: optional
 
-  # Epic 8: Fiches Mémo MDB (FR28-FR30)
+  # ====================
+  # Epic 8: Fiches Mémo MDB
+  # FR40-FR43
+  # ====================
   epic-8: backlog
   8-1-consultation-guides-fiches-memo: ready-for-dev
+  8-2-fiches-memo-consultables-offline: ready-for-dev
+  8-3-suggestions-fiches-memo-contextuelles: ready-for-dev
   epic-8-retrospective: optional
 
-  # Epic 9: Intégration DVF (FR35-FR37)
+  # ====================
+  # Epic 9: Score d'Opportunité & Intégration DVF
+  # FR21-FR23, FR48-FR50
+  # ====================
   epic-9: backlog
-  9-1-recuperation-affichage-dvf: ready-for-dev
-  9-2-cache-dvf-offline: ready-for-dev
+  9-1-calcul-affichage-score-opportunite: ready-for-dev
+  9-2-recuperation-affichage-donnees-dvf: ready-for-dev
+  9-3-cache-dvf-consultation-offline: ready-for-dev
   epic-9-retrospective: optional
 
-  # Epic 10: Simulateur TVA & Guide Fiscalité (FR43-FR49)
+  # ====================
+  # Epic 10: Simulateur TVA & Guide Fiscalité
+  # FR57-FR63
+  # ====================
   epic-10: backlog
-  10-1-simulateur-tva-marge: ready-for-dev
-  10-2-guide-fiscalite-mdb: ready-for-dev
+  10-1-simulateur-tva-sur-marge: ready-for-dev
+  10-2-guide-fiscalite-mdb-regles-tva: ready-for-dev
+  10-3-guide-fiscalite-mdb-plus-value-regimes: ready-for-dev
+  10-4-alertes-delais-revente-fiscaux: ready-for-dev
   epic-10-retrospective: optional
 
-  # Epic 11: Mode Offline & Sync (FR31-FR34)
+  # ====================
+  # Epic 11: Mode Offline & Sync
+  # FR44-FR47
+  # ====================
   epic-11: backlog
   11-1-consultation-saisie-offline: ready-for-dev
   11-2-synchronisation-auto-retour-reseau: ready-for-dev
+  11-3-photos-offline-upload-differe: ready-for-dev
   epic-11-retrospective: optional
 
-  # Epic 12: Partage & Collaboration (FR38-FR42)
+  # ====================
+  # Epic 12: Partage & Collaboration
+  # FR51-FR56
+  # ====================
   epic-12: backlog
   12-1-generation-lien-public-artisan: ready-for-dev
-  12-2-consultation-associe-compte-invite: ready-for-dev
+  12-2-consultation-artisan-via-lien-partage: ready-for-dev
+  12-3-soumission-devis-artisan: ready-for-dev
+  12-4-notification-consultation-estimations-artisan: ready-for-dev
+  12-5-consultation-associe-via-compte-invite: ready-for-dev
   epic-12-retrospective: optional

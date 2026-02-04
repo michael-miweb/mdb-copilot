@@ -1,0 +1,28 @@
+{
+  "name": "mdb-copilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MDB Copilot - Real Estate Investment Assistant",
+  "scripts": {
+    "dev:mobile": "pnpm --filter @mdb/mobile dev",
+    "dev:web": "pnpm --filter @mdb/web dev",
+    "build:web": "pnpm --filter @mdb/web build",
+    "test": "pnpm -r test",
+    "test:web": "pnpm --filter @mdb/web test",
+    "test:mobile": "pnpm --filter @mdb/mobile test",
+    "test:shared": "pnpm --filter @mdb/shared test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

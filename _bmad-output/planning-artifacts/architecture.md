@@ -4,8 +4,11 @@ inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/product-brief-mdb-copilot-2026-01-27.md
   - _bmad-output/planning-artifacts/ux-design-specification.md
-revisedAt: '2026-01-29'
-revisionNote: 'UX Design integration — Material 3, custom palette, 7 custom components, AdaptiveScaffold, WCAG 2.1 AA'
+revisedAt: '2026-02-03'
+revisionNote: 'Pivot technologique Flutter → React Native + React Web'
+previousRevision:
+  date: '2026-01-29'
+  note: 'UX Design integration — Material 3, custom palette, 7 custom components, AdaptiveScaffold, WCAG 2.1 AA'
 workflowType: 'architecture'
 lastStep: 8
 status: 'complete'
@@ -23,40 +26,42 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 ### Requirements Overview
 
-**Functional Requirements (49 FRs, 13 capability areas) :**
+**Functional Requirements (63 FRs, 14 capability areas) :**
 
 Les FRs se regroupent architecturalement en 4 domaines :
 
-1. **Data Management** (Fiches, Pipeline, Photos) — CRUD, statuts, stockage binaire
+1. **Data Management** (Fiches, Pipeline, Photos, Contacts) — CRUD, statuts, stockage binaire
 2. **Field Operations** (Checklist, Guide visite, Synthèse) — offline-critical, capture terrain
 3. **Analysis & Education** (Score, TVA, Fiscalité, Mémos) — logique métier, contenu statique
-4. **Collaboration** (Auth, Partage, Rôles) — multi-utilisateur, accès contrôlé
+4. **Collaboration & Onboarding** (Auth, Partage, Rôles, Import lien, Tour guidé) — multi-utilisateur, accès contrôlé
 
 **Non-Functional Requirements architecturalement structurants :**
 
 | NFR | Impact architectural |
 |-----|---------------------|
-| Offline-first | Base de données locale + sync engine + conflict resolution |
-| Performance < 2s | Rendu natif Flutter, pas de surcharge réseau au chargement |
+| Offline-first | Base de données locale (mobile + web) + sync engine + conflict resolution |
+| Performance < 2s | Rendu natif React Native, données locales au chargement |
 | Sanctum + RBAC | Auth service, middleware de permissions, token abilities, token public pour partage |
 | RGPD | Consentement, suppression, chiffrement local |
 | 99% disponibilité | Résilience naturelle via offline, backend simple |
 
 **Scale & Complexity :**
 
-- Domaine primaire : Full-stack mobile-first (Flutter front + Laravel back)
+- Domaine primaire : Full-stack mobile-first (React Native + React front, Laravel back)
 - Niveau de complexité : Moyen
-- Composants architecturaux estimés : 8-10 (auth, API REST, DB, sync engine, DVF proxy, photo storage, offline DB, business logic)
+- Composants architecturaux estimés : 10-12 (auth, API REST, DB serveur, sync engine mobile, sync engine web, DVF proxy, scraping service, photo storage, offline DB mobile, offline DB web, business logic, shared packages)
 
 ### Technical Constraints & Dependencies
 
-- **Flutter (Dart)** côté client : mobile natif iOS/Android + web
-- **Laravel (PHP)** côté serveur : API REST, auth, business logic serveur, proxy DVF
-- **Stack hétérogène** : Flutter ↔ Laravel via API REST JSON
+- **React Native + Expo** côté mobile : iOS/Android natif via Expo managed workflow
+- **React + Vite** côté web : SPA, même logique métier, UI adaptée
+- **Laravel (PHP)** côté serveur : API REST, auth, business logic serveur, proxy DVF, **scraping annonces**
+- **Stack hétérogène** : React/React Native ↔ Laravel via API REST JSON
 - **OVH serveur privé** : hébergement imposé, Laravel natif sur serveur dédié
 - **DVF data.gouv.fr** : API externe, données avec ~6 mois de retard, proxy Laravel
-- **Material 3** : design system unique, palette Violet/Magenta (light) + Indigo/Orchidée (dark), Inter font, Material Symbols Rounded, AdaptiveScaffold responsive, WCAG 2.1 AA
-- **Développement assisté par agents IA** : architecture claire, conventions strictes, séparation nette des responsabilités pour faciliter le travail des agents
+- **Scraping annonces** : Backend proxy pour LeBonCoin, SeLoger, PAP, Logic-Immo
+- **Material 3** : via MUI (web) + React Native Paper (mobile), palette Violet/Magenta (light) + Indigo/Orchidée (dark), Inter font, Material Symbols, WCAG 2.1 AA
+- **Développement assisté par agents IA** : architecture claire, conventions strictes, séparation nette des responsabilités
 
 ### Cross-Cutting Concerns
 
@@ -67,33 +72,74 @@ Les FRs se regroupent architecturalement en 4 domaines :
 | **Photo management** | Guide visite, fiches annonces, partage artisan |
 | **Business logic** | Score d'opportunité (client+serveur), simulateur TVA (client), synthèse post-visite (client) |
 | **Contenu statique** | Fiches mémo, guide fiscalité, checklist templates |
-| **API contract** | Interface Flutter ↔ Laravel, versioning, validation |
+| **API contract** | Interface React ↔ Laravel, validation |
+| **Code sharing** | Logique métier partagée entre mobile et web via packages communs |
+| **Scraping** | Import annonces via backend proxy (LeBonCoin, SeLoger, PAP, Logic-Immo) |
 
 ## Starter Template Evaluation
 
 ### Domaine technologique principal
 
-**Full-stack hétérogène** : Flutter 3.38.x (multi-platform) + Laravel 12.x (API backend), deux codebases distinctes communicant via API REST JSON.
+**Full-stack hétérogène** : React Native + Expo (mobile multi-platform) + React + Vite (web SPA) + Laravel 12.x (API backend), trois codebases dans un monorepo communicant via API REST JSON.
 
-### Options évaluées — Client Flutter
+### Options évaluées — Mobile React Native
 
-| Starter | State Mgmt | Architecture | Maintenance | Verdict |
-|---------|-----------|-------------|-------------|---------|
-| **Very Good CLI (Core)** | Bloc | Clean, folder-by-feature | ✅ Actif (Very Good Ventures) | **Retenu** |
-| Momentous Flutter Starter | Riverpod | Clean arch + Material 3 | ⚠️ Community | Non retenu |
-| GeekyAnts Flutter Starter | Bloc | Feature-based | ⚠️ Sporadique | Non retenu |
-| `flutter create` vanilla | Aucun | Minimale | ✅ Officiel | Trop minimaliste |
+| Starter | Expo | Navigation | Offline | Maintenance | Verdict |
+|---------|------|------------|---------|-------------|---------|
+| **Expo (managed)** | ✅ Natif | React Navigation | Via libs | ✅ Actif (Expo team) | **Retenu** |
+| Ignite (Infinite Red) | ✅ | React Navigation | MobX-State-Tree | ⚠️ Opinionated | Non retenu |
+| Create React Native App | ❌ Deprecated | — | — | ❌ | Non retenu |
 
-### Options évaluées — Base de données locale (offline-first)
+### Options évaluées — Web React
 
-| DB | Type | Offline-first | Maintenance | Verdict |
-|----|------|--------------|-------------|---------|
-| **Drift** (SQLite) | Relationnel, type-safe | ✅ Excellent | ✅ Actif | **Retenu** |
-| Hive | Key-value | ⚠️ Limité | ⚠️ Abandonné par auteur | Non retenu |
-| Isar | NoSQL performant | ✅ Bon | ❌ Abandonné, core Rust | Non retenu |
-| sqflite | SQL brut | ✅ Bon | ✅ Actif | Trop bas niveau |
+| Starter | Build | Router | Maintenance | Verdict |
+|---------|-------|--------|-------------|---------|
+| **Vite + React** | ✅ Rapide | React Router | ✅ Actif | **Retenu** |
+| Create React App | ⚠️ Lent | React Router | ❌ Deprecated | Non retenu |
+| Next.js | SSR/SSG | App Router | ✅ Actif | Overkill (pas de SEO requis) |
 
-### Options évaluées — Authentification backend
+### Options évaluées — State Management
+
+| Lib | Type | Bundle size | DX | Verdict |
+|-----|------|-------------|-----|---------|
+| **Zustand** | Minimal, hooks | ~1KB | ✅ Simple | **Retenu** |
+| Redux Toolkit | Full-featured | ~10KB | ⚠️ Boilerplate | Non retenu |
+| Jotai | Atomic | ~2KB | ✅ Simple | Alternative viable |
+| MobX | Observable | ~15KB | ⚠️ Complexe | Non retenu |
+
+**Rationale Zustand** : Minimaliste, API hooks intuitive, pas de boilerplate, fonctionne identiquement React et React Native, persist middleware pour offline.
+
+### Options évaluées — Base de données locale mobile
+
+| DB | Type | Offline-first | Sync | Maintenance | Verdict |
+|----|------|--------------|------|-------------|---------|
+| **WatermelonDB** | SQLite, lazy | ✅ Excellent | ✅ Sync primitives | ✅ Actif | **Retenu** |
+| expo-sqlite | SQLite brut | ✅ Bon | ❌ Manuel | ✅ Expo team | Alternative |
+| MMKV | Key-value | ⚠️ Simple data | ❌ | ✅ Actif | Non retenu (pas relationnel) |
+| Realm | NoSQL | ✅ Bon | ⚠️ Device Sync payant | ⚠️ | Non retenu |
+
+**Rationale WatermelonDB** : Conçu pour offline-first, lazy loading, sync primitives intégrées, modèle relationnel, performance sur grandes collections.
+
+### Options évaluées — Base de données locale web
+
+| DB | Type | API | Maintenance | Verdict |
+|----|------|-----|-------------|---------|
+| **Dexie.js** | IndexedDB wrapper | Promise + hooks | ✅ Actif | **Retenu** |
+| idb | IndexedDB wrapper | Promise | ✅ Actif | Plus bas niveau |
+| localForage | Multi-backend | Callback/Promise | ⚠️ Maintenance réduite | Non retenu |
+| PouchDB | CouchDB-like | Sync intégré | ⚠️ | Overkill |
+
+**Rationale Dexie.js** : API intuitive, `useLiveQuery` hook pour React, performant, bien documenté.
+
+### Options évaluées — UI Kit
+
+| Mobile | Web | M3 Support | Verdict |
+|--------|-----|------------|---------|
+| **React Native Paper** | **MUI v5+** | ✅ Natif | **Retenu** |
+| NativeBase | Chakra UI | ⚠️ Partiel | Non retenu |
+| Tamagui | Tamagui | ⚠️ Custom | Non retenu |
+
+### Options évaluées — Authentification backend (inchangé)
 
 | Approche | Type | Maintenu par | Verdict |
 |----------|------|-------------|---------|
@@ -105,28 +151,53 @@ Les FRs se regroupent architecturalement en 4 domaines :
 
 ### Sélection retenue
 
-#### Flutter — Very Good CLI (Core)
+#### Mobile — React Native + Expo
 
 ```bash
-dart pub global activate very_good_cli
-very_good create flutter_app mdb_copilot --desc "MDB Copilot - Assistant Marchand de Bien" --org "com.mdbcopilot"
+npx create-expo-app@latest mobile-app --template blank-typescript
+cd mobile-app
+npx expo install @react-navigation/native @react-navigation/bottom-tabs react-native-paper
+npx expo install @nozbe/watermelondb
 ```
 
 **Décisions architecturales fournies :**
 
-- **Langage** : Dart avec lint strictes (Very Good Analysis)
-- **State management** : Bloc pattern
-- **Structure** : folder-by-feature, packages séparés
-- **Build** : flavors dev/staging/production
-- **i18n** : support intégré (FR)
-- **Tests** : infrastructure 100% coverage
+- **Langage** : TypeScript strict
+- **State management** : Zustand avec persist middleware
+- **Navigation** : React Navigation (bottom tabs + stack)
+- **UI** : React Native Paper (Material 3)
+- **Offline DB** : WatermelonDB
+- **Build** : Expo EAS (managed workflow)
 
-#### Laravel 12 — Sail (dev) + Octane/FrankenPHP (prod)
+#### Web — React + Vite
 
 ```bash
-composer create-project laravel/laravel mdb-copilot-api
-cd mdb-copilot-api
+npm create vite@latest web-app -- --template react-ts
+cd web-app
+npm install @mui/material @emotion/react @emotion/styled react-router-dom zustand dexie dexie-react-hooks
+```
+
+**Décisions architecturales fournies :**
+
+- **Langage** : TypeScript strict
+- **State management** : Zustand (même que mobile)
+- **Navigation** : React Router v6
+- **UI** : MUI v5+ (Material 3)
+- **Offline DB** : Dexie.js (IndexedDB)
+- **Build** : Vite
+
+#### Backend — Laravel 12 (inchangé)
+
+```bash
+# Déjà en place, pas de changement
+cd backend-api
 php artisan install:api  # Sanctum inclus
+```
+
+**Ajout pour scraping :**
+
+```bash
+composer require symfony/dom-crawler symfony/css-selector guzzlehttp/guzzle
 ```
 
 **Décisions architecturales fournies :**
@@ -134,10 +205,11 @@ php artisan install:api  # Sanctum inclus
 - **Langage** : PHP 8.2+
 - **Auth** : Sanctum (token API, abilities pour RBAC)
 - **API** : routes `api.php`, middleware `auth:sanctum`
-- **Structure** : MVC standard Laravel
+- **Structure** : MVC standard Laravel + Actions/Services
 - **DB serveur** : MySQL 8.x
+- **Scraping** : Symfony DomCrawler + Guzzle
 
-#### Environnement de développement — Laravel Sail
+#### Environnement de développement — Laravel Sail (inchangé)
 
 Convention multi-projet : préfixe port **4** pour éviter les conflits Docker.
 
@@ -149,40 +221,44 @@ Convention multi-projet : préfixe port **4** pour éviter les conflits Docker.
 | Mailpit SMTP | 1025 | **41025** |
 | Mailpit Dashboard | 8025 | **48025** |
 
-#### Production — Docker (OVH serveur privé)
+#### Production
 
-Stack de production sur le modèle `meal-planner/backend-api` :
+**Backend (inchangé) :**
 
 - **Dockerfile** : FrankenPHP + Octane, image Alpine optimisée
-- **docker-compose.prod.yml** : app + MySQL + queue worker + scheduler, réseau `docker_internal`
-- **deploy.sh** : build multi-tag → push vers `docker-registry.miweb.fr/mdb-copilot-api`
+- **docker-compose.prod.yml** : app + MySQL + queue worker + scheduler
+- **deploy.sh** : build multi-tag → push vers registry privé
 - **Watchtower** : auto-deploy sur le serveur de production
-- **docker/php/php.ini** : config production (opcache, JIT, timezone Europe/Paris)
 
-#### DB locale Flutter — Drift
+**Web :**
 
-- Données structurées (fiches, checklists, pipeline) avec type-safety
-- Chiffrement via `sqlcipher_flutter_libs` (RGPD)
-- Migrations type-safe, reactive streams pour le UI
-- Synchronisation background avec le backend Laravel
+- Build Vite statique (`npm run build`)
+- Hébergement : même serveur OVH (nginx static) ou CDN
+- Deploy : rsync ou Docker nginx
 
-**Note :** L'initialisation des projets (Flutter + Laravel + Docker) fera l'objet d'un **epic DevOps dédié** incluant : setup Sail, Dockerfile prod, scripts de build/deploy, configuration CI.
+**Mobile :**
+
+- Expo EAS Build pour iOS et Android
+- Publication App Store / Play Store via EAS Submit
+
+**Note :** L'initialisation des projets (React Native + React + Laravel + Docker) fera l'objet d'un **epic DevOps dédié** incluant : setup Expo, setup Vite, Sail, Dockerfile prod, scripts de build/deploy.
 
 ## Core Architectural Decisions
 
 ### Decision Priority Analysis
 
 **Décisions critiques (bloquent l'implémentation) :**
-- Data sync strategy (last-write-wins, delta incrémental)
+- Data sync strategy (last-write-wins, delta incrémental) — **mobile ET web**
 - Auth Sanctum + RBAC + partage public
-- Drift + SQLCipher pour offline-first
-- API REST v1 avec endpoint sync batch
+- WatermelonDB (mobile) + Dexie.js (web) pour offline-first
+- API REST avec endpoint sync batch
+- **Scraping service backend** (import annonces)
 
 **Décisions importantes (structurent l'architecture) :**
-- Repository pattern (abstraction local/remote)
-- Package UI dédié (mdb_ui) pour design system
+- Zustand stores partagés (logique commune mobile/web)
+- Package shared pour types et utilitaires (`@mdb/shared`)
 - OpenAPI auto-doc via Scramble
-- Qualité code locale via PHPStorm (PHPStan, Pint, PHPUnit, Very Good CLI)
+- Qualité code locale (ESLint, Prettier, TypeScript strict)
 
 **Décisions différées (post-MVP) :**
 - Monitoring avancé (Sentry, metrics)
@@ -194,7 +270,9 @@ Stack de production sur le modèle `meal-planner/backend-api` :
 | Décision | Choix | Rationale |
 |----------|-------|-----------|
 | DB serveur | MySQL 8.x | Standard Laravel, OVH compatible |
-| DB locale | Drift (SQLite) + SQLCipher | Type-safe, chiffré, RGPD |
+| DB locale mobile | **WatermelonDB** (SQLite) | Lazy loading, sync primitives, performant |
+| DB locale web | **Dexie.js** (IndexedDB) | API hooks, performant, bien documenté |
+| Chiffrement mobile | SQLCipher via WatermelonDB | RGPD |
 | Sync | Delta incrémental via `updated_at` | Simple, adapté mono-utilisateur |
 | Conflit | Last-write-wins | Risque quasi nul (usage solo principal) |
 | Cache DVF | Cache DB Laravel, TTL 24h | Pas besoin Redis à cette échelle |
@@ -208,7 +286,8 @@ Stack de production sur le modèle `meal-planner/backend-api` :
 | Auth | Laravel Sanctum | Officiel, token abilities, révocation simple |
 | RBAC | Token abilities : `owner`, `guest-read`, `guest-extended` | Natif Sanctum |
 | Partage public | Token signé durée limitée, abilities restreintes | Pas de compte pour artisan |
-| Chiffrement local | SQLCipher + flutter_secure_storage | Keychain/Keystore natif |
+| Chiffrement mobile | SQLCipher + SecureStore (Expo) | Keychain/Keystore natif |
+| Chiffrement web | — (IndexedDB non chiffré, données moins sensibles) | Acceptable pour web |
 | API security | HTTPS, validation request classes, rate limit 60/min | Défenses standard Laravel |
 | RGPD | Endpoint suppression, purge données, consentement | Conformité réglementaire |
 
@@ -221,123 +300,203 @@ Stack de production sur le modèle `meal-planner/backend-api` :
 | Erreurs | JSON standardisé `{ message, errors, code }` | Cohérence, parsing client simple |
 | Documentation | Scramble (OpenAPI auto) | Auto-généré, utile pour agents IA |
 | Sync | `POST /api/sync` batch | Delta up + down en une requête |
+| **Scraping** | `POST /api/scrape` | Backend proxy, évite CORS, gère changements structure |
 
 ### Frontend Architecture
 
 | Décision | Choix | Rationale |
 |----------|-------|-----------|
-| State management | Bloc / Cubit par feature | Very Good CLI standard |
-| Data layer | Repository pattern (local + remote) | Abstraction offline/online |
-| Routing | GoRouter | Standard VGV, déclaratif |
-| Design system | Material 3 + `flutter_adaptive_scaffold` + package `mdb_ui` | M3 pur, NavBar < 600dp / NavRail ≥ 600dp, 7 composants custom MDB |
-| Photos | image_picker + compression + upload queue | UX fluide offline |
+| State management | **Zustand** | Minimaliste, même API mobile/web, persist middleware |
+| Data layer mobile | WatermelonDB models + sync | Offline-first natif |
+| Data layer web | Dexie.js tables + useLiveQuery | Réactif, offline |
+| Routing mobile | React Navigation | Standard React Native |
+| Routing web | React Router v6 | Standard React |
+| Design system | Material 3 via Paper (mobile) + MUI (web) | M3 natif, même palette |
+| Photos mobile | expo-image-picker + compression + upload queue | UX fluide offline |
+| Photos web | File input + compression + upload | Simplifié |
+| Code sharing | Package `@mdb/shared` (types, utils, API client) | DRY, cohérence |
 
 ### Infrastructure & Deployment
 
 | Décision | Choix | Rationale |
 |----------|-------|-----------|
-| Dev local | Laravel Sail, préfixe port 4 | Convention multi-projet Docker |
-| Prod | Octane + FrankenPHP, image Docker Alpine | Performance, OVH dédié |
-| Deploy | deploy.sh → registry privé → Watchtower | Auto-deploy sur push |
-| Qualité code | PHPStorm (PHPStan, Pint, PHPUnit, VGV) | Tout en local, pas de CI distant |
+| Dev local backend | Laravel Sail, préfixe port 4 | Convention multi-projet Docker |
+| Dev local mobile | Expo Go | Hot reload, pas de build natif |
+| Dev local web | Vite dev server | HMR rapide |
+| Prod backend | Octane + FrankenPHP, image Docker Alpine | Performance, OVH dédié |
+| Prod web | Vite build statique → nginx ou CDN | Simple, performant |
+| Prod mobile | Expo EAS Build → App Store / Play Store | Managed workflow |
+| Qualité code | ESLint + Prettier + TypeScript strict | Standards JS/TS |
 | Environnements | dev / staging / prod | Staging sur même OVH |
 | Monitoring V1 | Logs Laravel (fichier + stderr) | Suffisant pour démarrer |
 
 ### Decision Impact Analysis
 
 **Séquence d'implémentation :**
-1. Epic DevOps : Sail + Docker + deploy + CI
-2. Auth Sanctum + modèle User + RBAC
+1. Epic DevOps : Monorepo setup, Expo, Vite, Sail, Docker, deploy
+2. Auth Sanctum + modèle User + RBAC (backend existant)
 3. Modèle de données + migrations MySQL
-4. Drift schema local + sync engine
-5. API REST v1 endpoints
-6. Features métier (fiches, pipeline, checklists...)
-7. Package mdb_ui + intégration design system
+4. Package shared (types, API client)
+5. WatermelonDB schema mobile + Dexie schema web
+6. Sync engine (mobile + web)
+7. API REST endpoints + Scraping service
+8. Features métier (fiches, pipeline, checklists...)
+9. Design system (theme MUI + Paper)
 
 **Dépendances cross-composants :**
-- Sync engine dépend de : schema Drift + API endpoints + Auth
-- Repository pattern dépend de : Drift + API client
-- Partage public dépend de : Auth tokens + API endpoints
-- Design system dépend de : aucune autre décision (parallélisable)
+- Sync engine dépend de : schemas DB locales + API endpoints + Auth
+- Package shared dépend de : types API définis
+- Scraping dépend de : API endpoints + modèle Property
+- Design system : parallélisable (pas de dépendance)
 
 ## Implementation Patterns & Consistency Rules
 
+### Architecture modulaire React
+
+| Couche | Responsabilité | Équivalent autres frameworks |
+|--------|----------------|------------------------------|
+| **Components** | UI pure, rendu, pas de logique | Views / Templates |
+| **Hooks** | Logique réutilisable avec état | Services (stateful) |
+| **Services** | Logique métier pure, sans état | Services (stateless) |
+| **API** | Communication HTTP | Gateway |
+| **Repositories** | Abstraction accès DB locale | Repository |
+| **Stores (Zustand)** | État global partagé | State Container |
+| **Types** | Définition des entités | Models / DTOs |
+| **Utils** | Fonctions pures utilitaires | Helpers |
+
 ### Naming Patterns
 
-**Base de données (Laravel/MySQL) :**
+**Base de données (Laravel/MySQL) — inchangé :**
 - Tables : `snake_case`, pluriel → `properties`, `checklist_items`, `visit_guide_responses`
 - Colonnes : `snake_case` → `created_at`, `property_id`, `sale_urgency`
 - Foreign keys : `{table_singulier}_id` → `property_id`, `user_id`
-- Index : `{table}_{colonnes}_index` → `properties_status_index` (convention Laravel par défaut)
 - Pivot tables : alphabétique singulier → `property_user`
 
-**API (JSON entre Flutter ↔ Laravel) :**
-- Endpoints : pluriel, `snake_case` → `/api/properties`, `/api/checklist_items`
+**API (JSON entre React ↔ Laravel) :**
+- Endpoints : pluriel, kebab-case → `/api/properties`, `/api/checklist-items`
 - Paramètres route : `{property}` (convention Laravel resource)
 - Query params : `snake_case` → `?page=1&per_page=20&sort_by=created_at`
-- JSON fields : `snake_case` (convention Laravel API Resource, Dart les accepte nativement)
+- JSON fields : `snake_case` (convention Laravel API Resource)
 
-**Code Dart (Flutter) :**
-- Classes : `PascalCase` → `PropertyRepository`, `ChecklistCubit`
-- Fichiers : `snake_case` → `property_repository.dart`, `checklist_cubit.dart`
+**Code TypeScript (React / React Native) :**
+- Fichiers composants : `PascalCase.tsx` → `PropertyCard.tsx`, `ScoreCard.tsx`
+- Fichiers utilitaires : `camelCase.ts` → `apiClient.ts`, `syncEngine.ts`
+- Composants : `PascalCase` → `PropertyCard`, `VisitGuideCategory`
+- Hooks : `useCamelCase` → `useProperties`, `useSyncStatus`
 - Variables/fonctions : `camelCase` → `propertyId`, `getVisitGuide()`
-- Constantes : `camelCase` → `defaultPageSize`
-- Enums : `PascalCase.camelCase` → `PropertyStatus.underAnalysis`
+- Constantes : `SCREAMING_SNAKE_CASE` → `DEFAULT_PAGE_SIZE`, `API_BASE_URL`
+- Types/Interfaces : `PascalCase` → `Property`, `VisitGuideResponse`
+- Enums : `PascalCase` → `PropertyStatus.UnderAnalysis`
+- Zustand stores : `use{Feature}Store` → `usePropertyStore`, `useAuthStore`
+- Services : `{feature}Service` → `propertyService`, `scoringService`
+- API : `{feature}Api` → `propertyApi`, `scrapingApi`
+- Repositories : `{Feature}Repository` → `PropertyRepository`
 
-**Code PHP (Laravel) :**
-- Classes : `PascalCase` → `PropertyController`, `ChecklistService`
+**Code PHP (Laravel) — inchangé :**
+- Classes : `PascalCase` → `PropertyController`, `ScrapingService`
 - Fichiers : `PascalCase` → `PropertyController.php` (PSR-4)
 - Variables/fonctions : `camelCase` → `$propertyId`, `getVisitGuide()`
 - Config keys : `snake_case` → `config('mdb.dvf_cache_ttl')`
 
 ### Structure Patterns
 
-**Flutter (folder-by-feature, VGV) :**
+**Feature structure (mobile et web) :**
 
 ```
-lib/
-├── app/                    # App-level (routing, theme, DI)
-├── features/
-│   ├── auth/
-│   │   ├── data/           # Repository, data sources, models
-│   │   ├── domain/         # Entities, use cases (si nécessaire)
-│   │   └── presentation/   # Cubits, widgets, pages
-│   ├── properties/
-│   ├── checklist/
-│   ├── visit_guide/
-│   ├── pipeline/
-│   ├── dvf/
-│   ├── memo_cards/
-│   └── sharing/
-├── core/                   # Shared : sync engine, API client, DB
-└── l10n/                   # Traductions
-packages/
-└── mdb_ui/                 # Design system Material 3 + 7 composants custom
-test/
-├── features/               # Miroir de lib/features/
-└── core/
+features/
+└── properties/
+    ├── screens/              # Pages/écrans (routing entry points)
+    │   └── PropertyListScreen.tsx
+    ├── components/           # UI pure, sans logique métier
+    │   ├── PropertyCard.tsx
+    │   └── PropertyForm.tsx
+    ├── hooks/                # Orchestration, logique avec état React
+    │   ├── useProperties.ts
+    │   └── usePropertyForm.ts
+    ├── services/             # Logique métier pure (testable sans mock)
+    │   ├── propertyService.ts
+    │   └── scoringService.ts
+    ├── api/                  # Appels HTTP spécifiques à la feature
+    │   └── propertyApi.ts
+    ├── types/                # Types locaux à la feature
+    │   └── index.ts
+    └── index.ts              # Export public de la feature
 ```
 
-**Laravel :**
+**Core structure :**
+
+```
+core/
+├── api/                      # Client HTTP générique
+│   ├── client.ts             # Axios/fetch configuré
+│   ├── interceptors.ts       # Auth, error handling
+│   └── types.ts
+├── db/                       # Base de données locale
+│   ├── schema.ts
+│   ├── models/               # WatermelonDB models (mobile) / Dexie tables (web)
+│   └── repositories/         # Abstraction accès data
+│       ├── PropertyRepository.ts
+│       └── BaseRepository.ts
+├── sync/                     # Sync engine
+│   ├── syncEngine.ts
+│   ├── syncService.ts
+│   └── conflictResolver.ts
+├── stores/                   # État global Zustand
+│   ├── authStore.ts
+│   └── syncStore.ts
+├── services/                 # Services globaux
+│   └── storageService.ts
+└── theme/                    # Design system
+    ├── theme.ts
+    └── colors.ts
+```
+
+**Laravel (ajout scraping) :**
 
 ```
 app/
 ├── Http/
-│   ├── Controllers/Api/V1/   # Un controller par resource
-│   ├── Requests/              # Form requests validation
-│   └── Resources/             # API Resources (JSON transform)
-├── Models/                    # Eloquent models
-├── Services/                  # Business logic (DVF proxy, scoring)
-├── Repositories/              # Si abstraction DB nécessaire
-└── Events/                    # Domain events
-database/migrations/
-routes/api.php                 # Toutes les routes API v1
-tests/Feature/                 # Tests API
-tests/Unit/                    # Tests unitaires services
-docker/                        # Config Docker prod
+│   ├── Controllers/Api/
+│   │   ├── PropertyController.php
+│   │   ├── ScrapingController.php      # Nouveau
+│   │   └── ...
+│   ├── Requests/
+│   └── Resources/
+├── Models/
+├── Actions/                            # Logique métier unitaire
+│   ├── CreatePropertyAction.php
+│   └── ...
+├── Services/
+│   ├── DvfService.php
+│   ├── ScoringService.php
+│   ├── SyncService.php
+│   └── Scraping/                       # Nouveau
+│       ├── ScrapingService.php
+│       ├── Scrapers/
+│       │   ├── ScraperInterface.php
+│       │   ├── LeBonCoinScraper.php
+│       │   ├── SeLogerScraper.php
+│       │   ├── PapScraper.php
+│       │   └── LogicImmoScraper.php
+│       └── ScrapingResult.php
+└── Events/
 ```
 
-### Format Patterns
+### Dependency Rules (imports autorisés)
+
+| Couche | Peut importer | Ne peut PAS importer |
+|--------|---------------|----------------------|
+| **Types** | Rien | — |
+| **Utils** | Types | Tout le reste |
+| **Services** | Types, Utils | API, Hooks, Components, Stores |
+| **API** | Types | Services, Hooks, Components |
+| **Repositories** | Types, DB Models | API, Hooks, Components |
+| **Stores** | Types, API, Services | Hooks, Components |
+| **Hooks** | Types, API, Services, Stores, Repos | Components |
+| **Components** | Types uniquement | API, Services, Hooks, Stores |
+| **Screens** | Tout | — |
+
+### Format Patterns (inchangé)
 
 **Réponse API succès :**
 
@@ -367,56 +526,100 @@ docker/                        # Config Docker prod
 
 ### Communication Patterns
 
-**Bloc/Cubit (Flutter) :**
-- States : `{Feature}State` avec `{Feature}Initial`, `{Feature}Loading`, `{Feature}Loaded`, `{Feature}Error`
-- Events (si Bloc) : `{Feature}{Action}` → `PropertiesLoadRequested`, `PropertyCreated`
-- Un Cubit par feature sauf si event-driven complexe → Bloc
+**Zustand stores :**
 
-**Laravel Events :**
+```typescript
+interface PropertyState {
+  properties: Property[];
+  isLoading: boolean;
+  error: string | null;
+  fetchProperties: () => Promise<void>;
+  createProperty: (data: CreatePropertyInput) => Promise<Property>;
+}
+
+export const usePropertyStore = create<PropertyState>()(
+  persist(
+    (set, get) => ({
+      properties: [],
+      isLoading: false,
+      error: null,
+      fetchProperties: async () => { /* ... */ },
+      createProperty: async (data) => { /* ... */ },
+    }),
+    { name: 'property-store' }
+  )
+);
+```
+
+**Hooks pattern :**
+- Un hook par feature pour encapsuler la logique : `useProperties()`, `useVisitGuide()`
+- Hooks retournent : `{ data, isLoading, error, actions }`
+- Composition de hooks pour logique complexe
+
+**Laravel Events (inchangé) :**
 - Naming : `PascalCase` → `PropertyCreated`, `VisitGuideCompleted`
 - Payload : l'entité Eloquent complète
 - Listeners dans `EventServiceProvider`
 
 ### Process Patterns
 
-**Error handling Flutter :**
-- Repository catch les exceptions réseau → retourne `Either<Failure, T>` ou lance `AppException` typée
-- Cubit catch → émet `{Feature}Error(message)`
-- UI affiche via `BlocListener`
+**Error handling React/React Native :**
+- API client throw des erreurs typées (`ApiError`)
+- Stores/hooks catch et set `error` state
+- UI affiche via conditional rendering ou toast/snackbar
 
-**Error handling Laravel :**
+**Error handling Laravel (inchangé) :**
 - Form Request pour validation → 422 auto
-- Exceptions custom dans `app/Exceptions/` → `PropertyNotFoundException`
+- Exceptions custom dans `app/Exceptions/`
 - Handler global → JSON formaté
 
 **Loading states :**
-- Flutter : toujours via Bloc state (`isLoading` dans le state, ou state dédié `Loading`)
-- Skeleton/shimmer UI pendant chargement, pas de spinner plein écran
+- Zustand store : `isLoading` boolean dans le state
+- React : skeleton/shimmer pendant chargement
+- Pas de spinner plein écran bloquant
 
 **Sync offline :**
-- Chaque write local marque l'entité `syncStatus: pending`
-- Background isolate tente sync quand connectivité détectée
+- Chaque write local marque l'entité `syncStatus: 'pending'`
+- Background sync quand connectivité détectée (NetInfo mobile, navigator.onLine web)
 - En cas d'échec réseau : retry avec backoff exponentiel
 - UI affiche indicateur sync status discret
+
+### Testability
+
+| Couche | Test type | Mocks nécessaires |
+|--------|-----------|-------------------|
+| **Services** | Unit | Aucun (fonctions pures) |
+| **API** | Unit | HTTP client mocké |
+| **Repositories** | Integration | DB in-memory |
+| **Stores** | Unit | API + Services mockés |
+| **Hooks** | Unit | Stores mockés |
+| **Components** | Snapshot + Unit | Props uniquement |
+| **Screens** | Integration | Hooks mockés |
 
 ### Enforcement Guidelines
 
 **Tous les agents IA DOIVENT :**
-1. Suivre les conventions de nommage exactes (snake_case API/DB, camelCase Dart, PascalCase classes)
+1. Suivre les conventions de nommage exactes (snake_case API/DB, camelCase TS, PascalCase composants)
 2. Utiliser les UUID v4 pour tous les IDs d'entités
-3. Créer les tests correspondants à chaque feature (test/ miroir de lib/)
-4. Utiliser le Repository pattern pour tout accès données
-5. Ne jamais accéder directement à l'API ou à Drift depuis les Cubits
-6. Formatter les montants en centimes integer
-7. Documenter les endpoints via API Resources Laravel (Scramble les introspect)
+3. Créer les tests correspondants à chaque feature (`__tests__/` miroir)
+4. Respecter les règles d'import entre couches (dependency rules)
+5. Mettre la logique métier dans les Services (pas dans hooks/components)
+6. Utiliser les Repositories pour tout accès DB locale
+7. Ne jamais accéder directement à l'API depuis les composants (→ hooks)
+8. Formatter les montants en centimes integer
+9. Utiliser le package `@mdb/shared` pour types et utils communs
+10. Documenter les endpoints via API Resources Laravel
 
 **Anti-patterns à éviter :**
-- ❌ Logique métier dans les Controllers (→ Services)
-- ❌ Accès DB direct dans les Cubits (→ Repository)
+- ❌ Logique métier dans les Controllers Laravel (→ Actions/Services)
+- ❌ Logique métier dans les Components React (→ Services)
+- ❌ Appels API directs dans les composants (→ hooks)
 - ❌ Dates en format custom (→ ISO 8601 uniquement)
 - ❌ IDs auto-increment côté client (→ UUID v4)
 - ❌ Strings pour les montants (→ int centimes)
-- ❌ Catch silencieux sans log ni state error
+- ❌ `any` en TypeScript (→ types explicites)
+- ❌ Duplication de types entre mobile et web (→ `@mdb/shared`)
+- ❌ Import de Components dans Services/API/Stores
 
 ## Project Structure & Boundaries
 
@@ -424,153 +627,210 @@ docker/                        # Config Docker prod
 
 ```
 mdb-copilot/
+├── apps/
+│   ├── mobile/                    # React Native + Expo
+│   └── web/                       # React + Vite
+├── packages/
+│   └── shared/                    # Types, utils, API client partagés
+├── backend-api/                   # Laravel 12 API
 ├── _bmad/
 ├── _bmad-output/
-├── backend-api/                    # Laravel 12 API
-├── mobile-app/                     # Flutter multi-platform
-├── CLAUDE.md                       # Conventions pour agents IA
+├── package.json                   # Workspaces config (npm/yarn/pnpm)
+├── tsconfig.base.json             # TypeScript config partagée
+├── CLAUDE.md
 └── README.md
 ```
 
-### Structure Flutter — `mobile-app/`
+### Structure Mobile — `apps/mobile/`
 
 ```
-mobile-app/
-├── pubspec.yaml
-├── analysis_options.yaml
-├── l10n.yaml
-├── lib/
-│   ├── main_development.dart
-│   ├── main_staging.dart
-│   ├── main_production.dart
+apps/mobile/
+├── app.json
+├── package.json
+├── tsconfig.json
+├── babel.config.js
+├── metro.config.js
+├── src/
 │   ├── app/
-│   │   ├── app.dart
-│   │   ├── routes.dart
-│   │   └── di.dart
+│   │   ├── App.tsx
+│   │   ├── navigation/
+│   │   │   ├── RootNavigator.tsx
+│   │   │   ├── MainTabs.tsx
+│   │   │   ├── AuthStack.tsx
+│   │   │   └── types.ts
+│   │   └── providers/
+│   │       └── AppProviders.tsx
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── screens/
+│   │   │   │   ├── LoginScreen.tsx
+│   │   │   │   ├── RegisterScreen.tsx
+│   │   │   │   └── ForgotPasswordScreen.tsx
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   ├── api/
+│   │   │   └── types/
+│   │   ├── properties/
+│   │   │   ├── screens/
+│   │   │   │   ├── PropertyListScreen.tsx
+│   │   │   │   ├── PropertyDetailScreen.tsx
+│   │   │   │   └── CreatePropertyScreen.tsx
+│   │   │   ├── components/
+│   │   │   │   ├── PropertyCard.tsx
+│   │   │   │   ├── PropertyForm.tsx
+│   │   │   │   └── LinkImportInput.tsx
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   ├── api/
+│   │   │   └── types/
+│   │   ├── pipeline/
+│   │   ├── contacts/
+│   │   ├── checklist/
+│   │   ├── visit-guide/
+│   │   ├── post-visit-summary/
+│   │   ├── memo-cards/
+│   │   ├── scoring/
+│   │   ├── vat-simulator/
+│   │   ├── tax-guide/
+│   │   ├── sharing/
+│   │   └── onboarding/
 │   ├── core/
 │   │   ├── api/
-│   │   │   ├── api_client.dart
-│   │   │   ├── api_interceptors.dart
-│   │   │   └── api_endpoints.dart
+│   │   │   ├── client.ts
+│   │   │   ├── interceptors.ts
+│   │   │   └── types.ts
 │   │   ├── db/
-│   │   │   ├── app_database.dart
-│   │   │   ├── app_database.g.dart
-│   │   │   └── tables/
-│   │   │       ├── properties_table.dart
-│   │   │       ├── checklists_table.dart
-│   │   │       ├── visit_guides_table.dart
-│   │   │       ├── photos_table.dart
-│   │   │       ├── memo_cards_table.dart
-│   │   │       └── pipeline_stages_table.dart
+│   │   │   ├── schema.ts
+│   │   │   ├── models/
+│   │   │   │   ├── PropertyModel.ts
+│   │   │   │   ├── ContactModel.ts
+│   │   │   │   ├── ChecklistModel.ts
+│   │   │   │   ├── VisitGuideModel.ts
+│   │   │   │   ├── PhotoModel.ts
+│   │   │   │   └── MemoCardModel.ts
+│   │   │   └── repositories/
+│   │   │       ├── BaseRepository.ts
+│   │   │       ├── PropertyRepository.ts
+│   │   │       └── ...
 │   │   ├── sync/
-│   │   │   ├── sync_engine.dart
-│   │   │   ├── sync_status.dart
-│   │   │   └── connectivity_monitor.dart
-│   │   ├── error/
-│   │   │   ├── app_exception.dart
-│   │   │   └── failure.dart
-│   │   └── constants/
-│   │       └── app_constants.dart
+│   │   │   ├── syncEngine.ts
+│   │   │   ├── syncService.ts
+│   │   │   ├── conflictResolver.ts
+│   │   │   └── useSyncStatus.ts
+│   │   ├── stores/
+│   │   │   ├── authStore.ts
+│   │   │   ├── syncStore.ts
+│   │   │   └── settingsStore.ts
+│   │   ├── theme/
+│   │   │   ├── theme.ts
+│   │   │   ├── colors.ts
+│   │   │   └── spacing.ts
+│   │   └── services/
+│   │       └── secureStorage.ts
+│   └── shared/
+│       └── components/
+│           ├── ScoreCard.tsx
+│           ├── OfflineBanner.tsx
+│           ├── LoadingSkeleton.tsx
+│           └── StatusBanner.tsx
+├── assets/
+│   ├── images/
+│   └── fonts/
+└── __tests__/
+    ├── features/
+    └── core/
+```
+
+### Structure Web — `apps/web/`
+
+```
+apps/web/
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── index.html
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── routes/
+│   │   ├── index.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── routes.ts
 │   ├── features/
 │   │   ├── auth/
-│   │   │   ├── data/
-│   │   │   │   ├── auth_repository.dart
-│   │   │   │   ├── auth_remote_source.dart
-│   │   │   │   └── models/
-│   │   │   │       └── user_model.dart
-│   │   │   └── presentation/
-│   │   │       ├── cubit/
-│   │   │       │   ├── auth_cubit.dart
-│   │   │       │   └── auth_state.dart
-│   │   │       └── pages/
-│   │   │           └── login_page.dart
-│   │   ├── properties/
-│   │   │   ├── data/
-│   │   │   │   ├── property_repository.dart
-│   │   │   │   ├── property_local_source.dart
-│   │   │   │   ├── property_remote_source.dart
-│   │   │   │   └── models/
-│   │   │   │       └── property_model.dart
-│   │   │   └── presentation/
-│   │   │       ├── cubit/
-│   │   │       ├── pages/
-│   │   │       └── widgets/
-│   │   ├── pipeline/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── checklist/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── visit_guide/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── post_visit_summary/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── dvf/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── memo_cards/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── scoring/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── vat_simulator/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   ├── tax_guide/
-│   │   │   ├── data/
-│   │   │   └── presentation/
-│   │   └── sharing/
-│   │       ├── data/
-│   │       └── presentation/
-│   └── l10n/
-│       ├── arb/
-│       │   └── app_fr.arb
-│       └── l10n.dart
-├── packages/
-│   └── mdb_ui/
-│       ├── pubspec.yaml              # depends on flutter_adaptive_scaffold, google_fonts, material_symbols_icons
-│       ├── lib/
-│       │   ├── mdb_ui.dart
-│       │   ├── theme/
-│       │   │   ├── mdb_theme.dart          # ColorScheme.fromSeed + dark overrides
-│       │   │   ├── mdb_light_theme.dart    # Violet/Magenta palette
-│       │   │   └── mdb_dark_theme.dart     # Indigo/Orchidée palette custom
-│       │   ├── tokens/
-│       │   │   ├── colors.dart             # Full scales light + dark
-│       │   │   ├── typography.dart         # Inter font, M3 type scale
-│       │   │   └── spacing.dart            # 4/8/12/16/24px
-│       │   └── widgets/
-│       │       ├── mdb_score_card.dart
-│       │       ├── mdb_kanban_board.dart
-│       │       ├── mdb_kanban_column.dart
-│       │       ├── mdb_kanban_card.dart
-│       │       ├── mdb_visit_guide_category.dart
-│       │       ├── mdb_guided_question.dart
-│       │       ├── mdb_post_visit_summary.dart
-│       │       ├── mdb_dvf_comparator.dart
-│       │       ├── mdb_offline_sync_indicator.dart
-│       │       └── mdb_property_card.dart
-│       └── test/
-├── test/
-│   ├── features/
-│   │   ├── auth/
+│   │   │   ├── pages/
+│   │   │   │   ├── LoginPage.tsx
+│   │   │   │   ├── RegisterPage.tsx
+│   │   │   │   └── ForgotPasswordPage.tsx
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   ├── api/
+│   │   │   └── types/
 │   │   ├── properties/
 │   │   ├── pipeline/
+│   │   ├── contacts/
 │   │   ├── checklist/
-│   │   ├── visit_guide/
-│   │   ├── dvf/
+│   │   ├── visit-guide/
+│   │   ├── memo-cards/
 │   │   ├── scoring/
-│   │   └── sharing/
+│   │   ├── vat-simulator/
+│   │   ├── sharing/
+│   │   └── onboarding/
 │   ├── core/
+│   │   ├── api/
+│   │   ├── db/
+│   │   │   ├── schema.ts           # Dexie schema
+│   │   │   ├── tables/
+│   │   │   └── repositories/
 │   │   ├── sync/
-│   │   └── api/
-│   └── helpers/
-│       ├── mock_api_client.dart
-│       └── test_helpers.dart
-└── integration_test/
+│   │   ├── stores/
+│   │   ├── theme/
+│   │   │   ├── theme.ts            # MUI theme
+│   │   │   └── colors.ts
+│   │   └── services/
+│   └── shared/
+│       └── components/
+├── public/
+└── __tests__/
+```
+
+### Structure Package Shared — `packages/shared/`
+
+```
+packages/shared/
+├── package.json
+├── tsconfig.json
+├── src/
+│   ├── index.ts
+│   ├── types/
+│   │   ├── index.ts
+│   │   ├── user.ts
+│   │   ├── property.ts
+│   │   ├── contact.ts
+│   │   ├── checklist.ts
+│   │   ├── visitGuide.ts
+│   │   ├── pipeline.ts
+│   │   ├── memoCard.ts
+│   │   ├── photo.ts
+│   │   ├── sharing.ts
+│   │   └── api.ts
+│   ├── constants/
+│   │   ├── index.ts
+│   │   ├── pipelineStages.ts
+│   │   └── propertyTypes.ts
+│   ├── utils/
+│   │   ├── index.ts
+│   │   ├── formatters.ts
+│   │   ├── validators.ts
+│   │   ├── dateUtils.ts
+│   │   └── moneyUtils.ts
+│   └── api/
+│       ├── index.ts
+│       ├── endpoints.ts
+│       └── types.ts
+└── __tests__/
 ```
 
 ### Structure Laravel — `backend-api/`
@@ -590,55 +850,58 @@ backend-api/
 │       └── php.ini
 ├── app/
 │   ├── Http/
-│   │   ├── Controllers/
-│   │   │   └── Api/
-│   │   │       ├── AuthController.php
-│   │   │       ├── PropertyController.php
-│   │   │       ├── ChecklistController.php
-│   │   │       ├── VisitGuideController.php
-│   │   │       ├── PipelineController.php
-│   │   │       ├── DvfController.php
-│   │   │       ├── MemoCardController.php
-│   │   │       ├── PhotoController.php
-│   │   │       ├── ScoringController.php
-│   │   │       ├── ShareController.php
-│   │   │       └── SyncController.php
+│   │   ├── Controllers/Api/
+│   │   │   ├── AuthController.php
+│   │   │   ├── PropertyController.php
+│   │   │   ├── ContactController.php
+│   │   │   ├── ChecklistController.php
+│   │   │   ├── VisitGuideController.php
+│   │   │   ├── PipelineController.php
+│   │   │   ├── DvfController.php
+│   │   │   ├── MemoCardController.php
+│   │   │   ├── PhotoController.php
+│   │   │   ├── ScoringController.php
+│   │   │   ├── ShareController.php
+│   │   │   ├── SyncController.php
+│   │   │   ├── ScrapingController.php
+│   │   │   └── InvitationController.php
 │   │   ├── Requests/
-│   │   │   ├── StorePropertyRequest.php
-│   │   │   ├── UpdatePropertyRequest.php
-│   │   │   ├── StoreChecklistRequest.php
-│   │   │   └── ...
 │   │   ├── Resources/
-│   │   │   ├── PropertyResource.php
-│   │   │   ├── ChecklistResource.php
-│   │   │   ├── VisitGuideResource.php
-│   │   │   └── ...
 │   │   └── Middleware/
 │   │       └── EnsureTokenAbility.php
 │   ├── Models/
 │   │   ├── User.php
 │   │   ├── Property.php
+│   │   ├── Contact.php
 │   │   ├── Checklist.php
 │   │   ├── ChecklistItem.php
 │   │   ├── VisitGuide.php
 │   │   ├── VisitGuideResponse.php
 │   │   ├── Photo.php
-│   │   ├── PipelineStage.php
 │   │   ├── MemoCard.php
-│   │   └── ShareToken.php
+│   │   ├── ShareToken.php
+│   │   └── Invitation.php
+│   ├── Actions/
+│   │   ├── CreatePropertyAction.php
+│   │   ├── UpdatePropertyAction.php
+│   │   └── ...
 │   ├── Services/
 │   │   ├── DvfService.php
 │   │   ├── ScoringService.php
 │   │   ├── SyncService.php
 │   │   ├── ShareService.php
-│   │   └── PhotoService.php
+│   │   ├── PhotoService.php
+│   │   └── Scraping/
+│   │       ├── ScrapingService.php
+│   │       ├── Scrapers/
+│   │       │   ├── ScraperInterface.php
+│   │       │   ├── LeBonCoinScraper.php
+│   │       │   ├── SeLogerScraper.php
+│   │       │   ├── PapScraper.php
+│   │       │   └── LogicImmoScraper.php
+│   │       └── ScrapingResult.php
 │   ├── Events/
-│   │   ├── PropertyCreated.php
-│   │   ├── VisitGuideCompleted.php
-│   │   └── SyncCompleted.php
 │   └── Exceptions/
-│       ├── PropertyNotFoundException.php
-│       └── DvfUnavailableException.php
 ├── database/
 │   ├── migrations/
 │   ├── seeders/
@@ -648,62 +911,63 @@ backend-api/
 │   ├── api.php
 │   └── console.php
 ├── storage/
-│   └── app/
-│       └── photos/
-├── tests/
-│   ├── Feature/
-│   │   ├── Auth/
-│   │   ├── Property/
-│   │   ├── Checklist/
-│   │   ├── Dvf/
-│   │   ├── Sync/
-│   │   └── Share/
-│   └── Unit/
-│       ├── Services/
-│       └── Models/
-└── vendor/
+│   └── app/photos/
+└── tests/
+    ├── Feature/
+    └── Unit/
 ```
 
 ### Architectural Boundaries
 
-**API Boundary** : `routes/api.php` — toute communication Flutter ↔ Laravel passe par `/api/*`. Aucun accès direct DB depuis Flutter.
+**API Boundary** : `routes/api.php` — toute communication React ↔ Laravel passe par `/api/*`. Aucun accès direct DB depuis le client.
 
-**Data Boundary** :
-- Flutter : Drift (local) ↔ Repository ↔ Cubit ↔ UI
-- Laravel : Eloquent (MySQL) ↔ Service ↔ Controller ↔ API Resource → JSON
+**Data Boundary :**
+- Mobile : WatermelonDB (local) ↔ Repository ↔ Hook ↔ Component
+- Web : Dexie.js (local) ↔ Repository ↔ Hook ↔ Component
+- Laravel : Eloquent (MySQL) ↔ Action/Service ↔ Controller ↔ Resource → JSON
 
-**Sync Boundary** : `POST /api/sync` est l'unique point d'échange de données. Le `SyncEngine` Flutter et le `SyncService` Laravel sont les seuls composants qui gèrent la synchronisation.
+**Sync Boundary** : `POST /api/sync` est l'unique point d'échange de données. Les `SyncEngine` mobile et web et le `SyncService` Laravel sont les seuls composants qui gèrent la synchronisation.
 
-**Auth Boundary** : Sanctum middleware sur toutes les routes API sauf `/api/auth/login`, `/api/auth/register`, et `/api/share/{token}` (accès public).
+**Auth Boundary** : Sanctum middleware sur toutes les routes API sauf :
+- `/api/auth/login`, `/api/auth/register`, `/api/auth/forgot-password`
+- `/api/share/{token}` (accès public artisan)
+- `/api/invitations/accept` (acceptation invitation)
 
-**Photo Boundary** : Upload via `POST /api/photos`, stockage `storage/app/photos/`, accès via signed URL Laravel. Côté Flutter, photos en cache local + upload queue.
+**Photo Boundary** : Upload via `POST /api/photos`, stockage `storage/app/photos/`, accès via signed URL Laravel. Côté client, photos en cache local + upload queue.
+
+**Scraping Boundary** : `POST /api/scrape` côté backend uniquement. Le client envoie l'URL, le backend fait le scraping et retourne les données structurées.
 
 ### Requirements → Structure Mapping
 
-| Feature (PRD) | Flutter feature/ | Laravel Controller | Drift Table |
-|---------------|-----------------|-------------------|-------------|
-| Auth | `auth/` | `AuthController` | — |
-| Fiches annonces | `properties/` | `PropertyController` | `properties_table` |
-| Pipeline Kanban | `pipeline/` | `PipelineController` | `pipeline_stages_table` |
-| Checklist pré-visite | `checklist/` | `ChecklistController` | `checklists_table` |
-| Guide visite | `visit_guide/` | `VisitGuideController` | `visit_guides_table` |
-| Synthèse post-visite | `post_visit_summary/` | — (client-only) | — |
-| Fiches mémo | `memo_cards/` | `MemoCardController` | `memo_cards_table` |
-| Score d'opportunité | `scoring/` | `ScoringController` | — |
-| DVF | `dvf/` | `DvfController` | — (cache Laravel) |
-| Simulateur TVA | `vat_simulator/` | — (client-only) | — |
-| Guide fiscalité | `tax_guide/` | — (client-only) | — |
-| Partage | `sharing/` | `ShareController` | — |
-| Mode offline | `core/sync/` | `SyncController` | toutes tables |
-| Photos | (dans visit_guide + properties) | `PhotoController` | `photos_table` |
+| Feature (PRD) | Mobile feature/ | Web feature/ | Laravel Controller |
+|---------------|-----------------|--------------|-------------------|
+| Auth | `auth/` | `auth/` | `AuthController` |
+| Contacts | `contacts/` | `contacts/` | `ContactController` |
+| Fiches annonces | `properties/` | `properties/` | `PropertyController` |
+| Import lien | `properties/` (LinkImportInput) | `properties/` | `ScrapingController` |
+| Pipeline Kanban | `pipeline/` | `pipeline/` | `PipelineController` |
+| Checklist pré-visite | `checklist/` | `checklist/` | `ChecklistController` |
+| Guide visite | `visit-guide/` | `visit-guide/` | `VisitGuideController` |
+| Synthèse post-visite | `post-visit-summary/` | — | — (client-only) |
+| Fiches mémo | `memo-cards/` | `memo-cards/` | `MemoCardController` |
+| Score d'opportunité | `scoring/` | `scoring/` | `ScoringController` |
+| DVF | (via scoring) | (via scoring) | `DvfController` |
+| Simulateur TVA | `vat-simulator/` | `vat-simulator/` | — (client-only) |
+| Guide fiscalité | `tax-guide/` | `tax-guide/` | — (client-only) |
+| Partage | `sharing/` | `sharing/` | `ShareController` |
+| Mode offline | `core/sync/` | `core/sync/` | `SyncController` |
+| Photos | (dans visit-guide + properties) | (dans visit-guide + properties) | `PhotoController` |
+| Onboarding | `onboarding/` | `onboarding/` | — (client-only) |
 
 ### External Integrations
 
 | Service | Point d'intégration | Boundary |
-|---------|-------------------|----------|
+|---------|---------------------|----------|
 | DVF data.gouv.fr | `DvfService` → API HTTP | Laravel proxy + cache 24h |
-| Docker Registry | `deploy.sh` → `docker-registry.miweb.fr` | Build & push |
+| LeBonCoin/SeLoger/PAP | `ScrapingService` → HTTP scraping | Laravel proxy |
+| Docker Registry | `deploy.sh` → registry privé | Build & push |
 | Watchtower | Prod server | Auto-pull images |
+| App Store / Play Store | Expo EAS Submit | Publication mobile |
 
 ## Architecture Validation Results
 
