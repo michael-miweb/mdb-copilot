@@ -37,12 +37,7 @@ export type {
 } from './property';
 
 // Contact types
-export type {
-  Contact,
-  ContactType,
-  CreateContactInput,
-  UpdateContactInput,
-} from './contact';
+export type { Contact, ContactType, CreateContactInput, UpdateContactInput } from './contact';
 
 // API types
 export type {

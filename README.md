@@ -18,12 +18,12 @@ backend-api/    # Laravel 12 + Sanctum — API REST JSON
 
 ## Ports Sail (développement)
 
-| Service | Port |
-|---------|------|
-| App | 4080 |
-| MySQL | 43306 |
-| Vite | 45173 |
-| Mailpit SMTP | 41025 |
+| Service           | Port  |
+| ----------------- | ----- |
+| App               | 4080  |
+| MySQL             | 43306 |
+| Vite              | 45173 |
+| Mailpit SMTP      | 41025 |
 | Mailpit Dashboard | 48025 |
 
 ## Démarrage rapide

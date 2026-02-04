@@ -12,10 +12,7 @@ export interface FormatMoneyOptions {
  * @param options Formatting options
  * @returns Formatted string (e.g., "1 500,00 €")
  */
-export function formatMoney(
-  centimes: number,
-  options: FormatMoneyOptions = {}
-): string {
+export function formatMoney(centimes: number, options: FormatMoneyOptions = {}): string {
   const { locale = 'fr-FR', currency = 'EUR', showSymbol = true } = options;
   const euros = centimes / 100;
 
@@ -46,10 +43,7 @@ export interface FormatDateOptions {
  * @param options Formatting options
  * @returns Formatted string (e.g., "3 février 2026")
  */
-export function formatDate(
-  isoDate: string,
-  options: FormatDateOptions = {}
-): string {
+export function formatDate(isoDate: string, options: FormatDateOptions = {}): string {
   const { locale = 'fr-FR', format = 'long', includeTime = false } = options;
   const date = new Date(isoDate);
 

@@ -22,37 +22,39 @@ backend-api/              # Laravel 12 + Sanctum — API REST JSON
 
 ## Conventions de nommage
 
-| Contexte | Convention | Exemple |
-|----------|-----------|---------|
-| DB columns, API JSON keys | snake_case | `created_at`, `user_id` |
-| TS/JS variables, functions | camelCase | `userName`, `fetchListings()` |
-| React components, classes | PascalCase | `ListingCard`, `UserService` |
-| PHP classes | PascalCase | `ListingController`, `UserService` |
-| PHP variables, methods | camelCase | `$listing`, `createListing()` |
-| Routes API | kebab-case, pluriel | `/api/listings`, `/api/visit-guides` |
-| Fichiers TypeScript | kebab-case | `listing-card.tsx`, `user-service.ts` |
-| Migrations Laravel | snake_case avec timestamp | `2026_01_28_create_listings_table` |
+| Contexte                   | Convention                | Exemple                               |
+| -------------------------- | ------------------------- | ------------------------------------- |
+| DB columns, API JSON keys  | snake_case                | `created_at`, `user_id`               |
+| TS/JS variables, functions | camelCase                 | `userName`, `fetchListings()`         |
+| React components, classes  | PascalCase                | `ListingCard`, `UserService`          |
+| PHP classes                | PascalCase                | `ListingController`, `UserService`    |
+| PHP variables, methods     | camelCase                 | `$listing`, `createListing()`         |
+| Routes API                 | kebab-case, pluriel       | `/api/listings`, `/api/visit-guides`  |
+| Fichiers TypeScript        | kebab-case                | `listing-card.tsx`, `user-service.ts` |
+| Migrations Laravel         | snake_case avec timestamp | `2026_01_28_create_listings_table`    |
 
 ## Ports développement
 
 Préfixe **4** pour éviter conflits avec autres projets sur ce laptop.
 
-| Service | Port |
-|---------|------|
-| Backend (Sail HTTP) | 4080 |
-| MySQL | 43306 |
-| Vite (web) | 45173 |
-| Expo (mobile) | 48081 |
-| Mailpit SMTP | 41025 |
-| Mailpit Dashboard | 48025 |
+| Service             | Port  |
+| ------------------- | ----- |
+| Backend (Sail HTTP) | 4080  |
+| MySQL               | 43306 |
+| Vite (web)          | 45173 |
+| Expo (mobile)       | 48081 |
+| Mailpit SMTP        | 41025 |
+| Mailpit Dashboard   | 48025 |
 
 ## Design Tokens
 
 ### Light Mode
+
 - Primary: Violet `#7c4dff`
 - Secondary: Magenta `#f3419f`
 
 ### Dark Mode
+
 - Primary: Indigo `#5750d8`
 - Secondary: Orchidée `#d063de`
 

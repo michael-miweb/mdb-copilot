@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.expo/
+.next/
+
+# Backend (PHP has its own formatter)
+backend-api/
+
+# Archived projects
+mobile-app-flutter-archived-*/
+
+# BMAD files (preserve formatting)
+_bmad/
+_bmad-output/
+
+# Generated files
+*.lock
+package-lock.json
+
+# IDE
+.idea/
+.vscode/
+
+# Misc
+coverage/
+*.min.js
+*.min.css

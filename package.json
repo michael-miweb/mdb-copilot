@@ -12,13 +12,14 @@
     "test:mobile": "pnpm --filter @mdb/mobile test",
     "test:shared": "pnpm --filter @mdb/shared test",
     "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint -- --fix",
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
     "prettier": "^3.2.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18.0.0",

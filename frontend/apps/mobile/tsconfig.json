@@ -4,16 +4,9 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@mdb/shared": [
-        "../../packages/shared/src"
-      ],
-      "@mdb/shared/*": [
-        "../../packages/shared/src/*"
-      ]
+      "@mdb/shared": ["../../packages/shared/src"],
+      "@mdb/shared/*": ["../../packages/shared/src/*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ]
+  "include": ["**/*.ts", "**/*.tsx"]
 }
