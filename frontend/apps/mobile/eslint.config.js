@@ -18,7 +18,7 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['node_modules/', '.expo/', 'dist/', 'build/'],
+    ignores: ['node_modules/', '.expo/', 'dist/', 'build/', '*.cjs'],
   },
   eslintConfigPrettier
 );

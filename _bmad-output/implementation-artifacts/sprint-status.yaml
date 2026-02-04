@@ -46,7 +46,7 @@ development_status:
   0-3-configuration-docker-production-deploiement: done
   0-4-configuration-qualite-code-linting: done
   0-5-configuration-design-system-theme: done
-  0-6-configuration-infrastructure-tests: ready-for-dev
+  0-6-configuration-infrastructure-tests: done
   0-7-service-scraping-backend: ready-for-dev
   epic-0-retrospective: optional
 

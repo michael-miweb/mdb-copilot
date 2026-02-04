@@ -81,3 +81,11 @@ export { API_CONFIG, LIGHT_THEME, DARK_THEME, SYNC_CONFIG } from './constants';
 // ============================================
 export { colors, spacing, borderRadius } from './theme';
 export type { ColorMode, Colors, Spacing, BorderRadius } from './theme';
+
+// ============================================
+// Test Utils
+// ============================================
+// NOTE: Test utilities are NOT exported from main index to prevent
+// accidental inclusion in production bundles. Import from:
+//   import { createMockFetch, ... } from '@mdb/shared/test-utils';
+// See: packages/shared/src/test-utils/index.ts
