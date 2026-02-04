@@ -1,6 +1,6 @@
 # Story 0.7: Service de scraping backend
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -40,52 +40,52 @@ so that l'import via lien fonctionne dès Epic 2.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Installer dépendances (AC: #3)
-  - [ ] `composer require symfony/dom-crawler symfony/css-selector guzzlehttp/guzzle`
-  - [ ] Vérifier installation
+- [x] Task 1: Installer dépendances (AC: #3)
+  - [x] `composer require symfony/dom-crawler symfony/css-selector guzzlehttp/guzzle`
+  - [x] Vérifier installation
 
-- [ ] Task 2: Créer ScraperInterface (AC: #3)
-  - [ ] Créer `app/Services/Scraping/Scrapers/ScraperInterface.php`
-  - [ ] Définir méthode `supports(string $url): bool`
-  - [ ] Définir méthode `scrape(string $url): ScrapingResult`
+- [x] Task 2: Créer ScraperInterface (AC: #3)
+  - [x] Créer `app/Services/Scraping/Scrapers/ScraperInterface.php`
+  - [x] Définir méthode `supports(string $url): bool`
+  - [x] Définir méthode `scrape(string $url): ScrapingResult`
 
-- [ ] Task 3: Créer ScrapingResult DTO (AC: #6)
-  - [ ] Créer `app/Services/Scraping/ScrapingResult.php`
-  - [ ] Propriétés : title, price, surface, address, description, photos[], source, url
-  - [ ] Propriété success/partial/error status
-  - [ ] Méthode `toArray()` pour serialization JSON
+- [x] Task 3: Créer ScrapingResult DTO (AC: #6)
+  - [x] Créer `app/Services/Scraping/ScrapingResult.php`
+  - [x] Propriétés : title, price, surface, address, description, photos[], source, url
+  - [x] Propriété success/partial/error status
+  - [x] Méthode `toArray()` pour serialization JSON
 
-- [ ] Task 4: Implémenter LeBonCoinScraper (AC: #4)
-  - [ ] Créer `app/Services/Scraping/Scrapers/LeBonCoinScraper.php`
-  - [ ] Implémenter `supports()` : regex sur leboncoin.fr
-  - [ ] Implémenter `scrape()` avec DomCrawler
-  - [ ] Extraire titre, prix, surface, adresse, description
-  - [ ] Extraire URLs des photos
-  - [ ] Gérer les cas où certains champs sont absents
+- [x] Task 4: Implémenter LeBonCoinScraper (AC: #4)
+  - [x] Créer `app/Services/Scraping/Scrapers/LeBonCoinScraper.php`
+  - [x] Implémenter `supports()` : regex sur leboncoin.fr
+  - [x] Implémenter `scrape()` avec DomCrawler
+  - [x] Extraire titre, prix, surface, adresse, description
+  - [x] Extraire URLs des photos
+  - [x] Gérer les cas où certains champs sont absents
 
-- [ ] Task 5: Créer stubs pour autres scrapers (AC: #5)
-  - [ ] Créer `SeLogerScraper.php` avec stub
-  - [ ] Créer `PapScraper.php` avec stub
-  - [ ] Créer `LogicImmoScraper.php` avec stub
-  - [ ] Retourner ScrapingResult avec status "not_implemented"
+- [x] Task 5: Créer stubs pour autres scrapers (AC: #5)
+  - [x] Créer `SeLogerScraper.php` avec stub
+  - [x] Créer `PapScraper.php` avec stub
+  - [x] Créer `LogicImmoScraper.php` avec stub
+  - [x] Retourner ScrapingResult avec status "not_implemented"
 
-- [ ] Task 6: Créer ScrapingService (AC: #2)
-  - [ ] Créer `app/Services/Scraping/ScrapingService.php`
-  - [ ] Injecter tous les scrapers
-  - [ ] Méthode `scrape(string $url)` qui délègue au bon scraper
-  - [ ] Retourner erreur si aucun scraper ne supporte l'URL
+- [x] Task 6: Créer ScrapingService (AC: #2)
+  - [x] Créer `app/Services/Scraping/ScrapingService.php`
+  - [x] Injecter tous les scrapers
+  - [x] Méthode `scrape(string $url)` qui délègue au bon scraper
+  - [x] Retourner erreur si aucun scraper ne supporte l'URL
 
-- [ ] Task 7: Créer ScrapingController (AC: #1)
-  - [ ] Créer `app/Http/Controllers/Api/ScrapingController.php`
-  - [ ] Route `POST /api/scrape`
-  - [ ] Validation : url required, url format
-  - [ ] Retourner ScrapingResult en JSON
+- [x] Task 7: Créer ScrapingController (AC: #1)
+  - [x] Créer `app/Http/Controllers/Api/ScrapingController.php`
+  - [x] Route `POST /api/scrape`
+  - [x] Validation : url required, url format
+  - [x] Retourner ScrapingResult en JSON
 
-- [ ] Task 8: Écrire tests (AC: #7)
-  - [ ] Créer fixtures HTML LeBonCoin dans `tests/fixtures/`
-  - [ ] Test unitaire LeBonCoinScraper avec fixture
-  - [ ] Test feature ScrapingController
-  - [ ] Tester cas succès, partiel, échec
+- [x] Task 8: Écrire tests (AC: #7)
+  - [x] Créer fixtures HTML LeBonCoin dans `tests/fixtures/`
+  - [x] Test unitaire LeBonCoinScraper avec fixture
+  - [x] Test feature ScrapingController
+  - [x] Tester cas succès, partiel, échec
 
 ## Dev Notes
 
@@ -230,8 +230,41 @@ app/Services/Scraping/
 ## Dev Agent Record
 
 ### Agent Model Used
-{{agent_model_name_version}}
+Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Completion Notes List
+- Service de scraping complet implémenté avec architecture extensible
+- LeBonCoinScraper fonctionnel avec extraction : titre, prix, surface, adresse, description, photos
+- Stubs pour SeLoger, PAP, Logic-Immo retournant "not_implemented"
+- ScrapingService délègue au bon scraper selon l'URL
+- ScrapingController expose POST /api/scrape avec validation
+- 23 tests ajoutés (10 unit LeBonCoinScraper, 6 unit ScrapingService, 7 feature Controller)
+- PHPStan niveau max, Pint formaté
+
+### Code Review Fixes Applied
+- [HIGH] Route /api/scrape restreinte au middleware abilities:owner
+- [MEDIUM] Rate limiting ajouté (throttle:10,1) pour prévenir abus
+- [MEDIUM] Fix double appel extractDescription dans extractSurface
+- [MEDIUM] Ajout tests HTTP mock (scrape success, HTTP error, network exception)
+- [LOW] Documentation des CSS selectors fragiles vs stables
+- [LOW] Logging des erreurs de scraping (Log::warning, Log::error)
+- [LOW] Documentation @internal sur parseHtml pour testabilité
 
 ### File List
+- backend-api/composer.json (modified - added dependencies)
+- backend-api/composer.lock (modified)
+- backend-api/app/Services/Scraping/ScrapingResult.php (created)
+- backend-api/app/Services/Scraping/ScrapingService.php (created)
+- backend-api/app/Services/Scraping/Scrapers/ScraperInterface.php (created)
+- backend-api/app/Services/Scraping/Scrapers/LeBonCoinScraper.php (created)
+- backend-api/app/Services/Scraping/Scrapers/SeLogerScraper.php (created)
+- backend-api/app/Services/Scraping/Scrapers/PapScraper.php (created)
+- backend-api/app/Services/Scraping/Scrapers/LogicImmoScraper.php (created)
+- backend-api/app/Http/Controllers/Api/ScrapingController.php (created)
+- backend-api/routes/api.php (modified - added scrape route)
+- backend-api/tests/fixtures/leboncoin/complete-listing.html (created)
+- backend-api/tests/fixtures/leboncoin/partial-listing.html (created)
+- backend-api/tests/fixtures/leboncoin/minimal-listing.html (created)
+- backend-api/tests/Unit/Services/Scraping/LeBonCoinScraperTest.php (created)
+- backend-api/tests/Unit/Services/Scraping/ScrapingServiceTest.php (created)
+- backend-api/tests/Feature/Scraping/ScrapingControllerTest.php (created)

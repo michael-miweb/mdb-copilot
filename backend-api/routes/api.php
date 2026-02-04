@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\ScrapingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -33,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('properties', PropertyController::class);
 
     Route::middleware('abilities:owner')->group(function () {
+        // Scraping - rate limited to prevent abuse (10 requests per minute)
+        Route::post('/scrape', [ScrapingController::class, 'scrape'])
+            ->middleware('throttle:10,1');
         Route::apiResource('contacts', ContactController::class);
         Route::post('/invitations', [InvitationController::class, 'store']);
         Route::get('/invitations', [InvitationController::class, 'index']);
