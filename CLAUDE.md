@@ -3,12 +3,13 @@
 ## Structure monorepo
 
 ```
-apps/
-  mobile/       # React Native + Expo — iOS, Android
-  web/          # React + Vite — Web app
-packages/
-  shared/       # @mdb/shared — Types, utils, constants partagés
-backend-api/    # Laravel 12 + Sanctum — API REST JSON
+frontend/                 # Partie applicative (clients)
+  apps/
+    mobile/               # React Native + Expo — iOS, Android
+    web/                  # React + Vite — Web app
+  packages/
+    shared/               # @mdb/shared — Types, utils, constants partagés
+backend-api/              # Laravel 12 + Sanctum — API REST JSON
 ```
 
 ## Stack technique
@@ -88,12 +89,12 @@ pnpm test                            # Tests tous les packages
 pnpm lint                            # Lint tous les packages
 pnpm typecheck                       # TypeScript check tous les packages
 
-# Mobile (depuis apps/mobile/) — port 48081
+# Mobile (depuis frontend/apps/mobile/) — port 48081
 pnpm dev                             # Démarrer Expo (port 48081)
 pnpm ios                             # iOS simulator
 pnpm android                         # Android emulator
 
-# Web (depuis apps/web/) — port 45173
+# Web (depuis frontend/apps/web/) — port 45173
 pnpm dev                             # Démarrer Vite (port 45173)
 pnpm build                           # Build production
 pnpm preview                         # Preview build
