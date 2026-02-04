@@ -75,3 +75,9 @@ export type { FormatMoneyOptions, FormatDateOptions } from './utils';
 // Constants
 // ============================================
 export { API_CONFIG, LIGHT_THEME, DARK_THEME, SYNC_CONFIG } from './constants';
+
+// ============================================
+// Theme / Design Tokens
+// ============================================
+export { colors, spacing, borderRadius } from './theme';
+export type { ColorMode, Colors, Spacing, BorderRadius } from './theme';

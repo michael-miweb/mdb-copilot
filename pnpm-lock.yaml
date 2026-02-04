@@ -17,6 +17,9 @@ importers:
 
   frontend/apps/mobile:
     dependencies:
+      '@expo-google-fonts/inter':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@mdb/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -29,6 +32,9 @@ importers:
       expo:
         specifier: ~54.0.33
         version: 54.0.33(@babel/core@7.29.0)(react-native@0.81.5)(react@19.1.0)
+      expo-font:
+        specifier: ^14.0.11
+        version: 14.0.11(expo@54.0.33)(react-native@0.81.5)(react@19.1.0)
       expo-status-bar:
         specifier: ~3.0.9
         version: 3.0.9(react-native@0.81.5)(react@19.1.0)
@@ -93,6 +99,9 @@ importers:
       '@emotion/styled':
         specifier: ^11.11.0
         version: 11.14.1(@emotion/react@11.14.0)(@types/react@19.2.10)(react@19.2.4)
+      '@fontsource/inter':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@mdb/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1833,6 +1842,10 @@ packages:
       levn: 0.4.1
     dev: true
 
+  /@expo-google-fonts/inter@0.4.2:
+    resolution: {integrity: sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ==}
+    dev: false
+
   /@expo/cli@54.0.23(expo@54.0.33)(react-native@0.81.5):
     resolution: {integrity: sha512-km0h72SFfQCmVycH/JtPFTVy69w6Lx1cHNDmfLfQqgKFYeeHTjx7LVDP4POHCtNxFP2UeRazrygJhlh4zz498g==}
     hasBin: true
@@ -2172,6 +2185,10 @@ packages:
       '@babel/code-frame': 7.29.0
       chalk: 4.1.2
       js-yaml: 4.1.1
+
+  /@fontsource/inter@5.2.8:
+    resolution: {integrity: sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg==}
+    dev: false
 
   /@humanfs/core@0.19.1:
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
