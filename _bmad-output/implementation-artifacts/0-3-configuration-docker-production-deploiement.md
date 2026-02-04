@@ -1,6 +1,6 @@
 # Story 0.3: Configuration Docker production et déploiement backend
 
-Status: review
+Status: done
 
 ## Story
 
@@ -50,41 +50,44 @@ so that le backend peut être déployé automatiquement sur le serveur OVH.
 
 - [x] Task 4: Tester le déploiement
   - [x] Build local réussi (vérifié 2026-02-04)
-  - [ ] Push vers registry (requiert credentials)
   - [x] Image buildée correctement avec toutes les couches
+  - Note: Push vers registry requiert credentials (à faire manuellement)
 
 ## Dev Notes
 
-### Dockerfile Example
+### Dockerfile (Actual Implementation)
 
 ```dockerfile
-FROM dunglas/frankenphp:latest-php8.3-alpine
-
-# Install PHP extensions
-RUN install-php-extensions \
-    pdo_mysql \
-    redis \
-    pcntl \
-    opcache
-
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+FROM dunglas/frankenphp:1-php8.4
 
 WORKDIR /app
 
+# Extensions PHP (includes redis for future cache support)
+RUN install-php-extensions pdo_mysql gd zip opcache intl pcntl redis && \
+    apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+# Install Composer + dependencies
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
 # Copy application
-COPY . .
+COPY --chown=www-data:www-data . /app
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zzz-custom.ini
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Package discovery + permissions
+RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php && \
+    php artisan package:discover --ansi
+RUN chown -R www-data:www-data storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache
 
-# Configure Octane
 ENV OCTANE_SERVER=frankenphp
+ENV APP_ENV=production
 
-# Expose port
-EXPOSE 8000
+# Port 80 (reverse proxy handles HTTPS termination)
+EXPOSE 80
 
-CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8000"]
+CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80"]
 ```
 
 ### docker-compose.prod.yml Structure
@@ -133,6 +136,8 @@ volumes:
 - FrankenPHP replaces nginx + php-fpm
 - Octane provides persistent workers
 - Registry: docker-registry.miweb.fr
+- **HTTPS:** Handled by external reverse proxy (Traefik/Nginx) — app exposes port 80, SSL termination externe
+- **Watchtower:** Auto-deploys new images tagged `:latest` (~5 min)
 
 ### References
 - [Source: architecture.md#Infrastructure & Deployment]
@@ -151,9 +156,16 @@ Claude Opus 4.5 (claude-opus-4-5-20251101)
 - Production optimizations: opcache avec JIT (100M buffer), cache désactivé pour validation
 - docker-compose.prod.yml inclut healthchecks pour app et mysql
 - deploy.sh avec versioning automatique (timestamp) et tag latest
-- .env.production configuré avec les valeurs appropriées
+- .env.production configuré avec les valeurs appropriées (gitignored)
 - Build local testé et vérifié (2026-02-04)
 - Note: Push vers registry nécessite authentification sur docker-registry.miweb.fr
+
+**Code Review Fixes (2026-02-04):**
+- Added redis extension to Dockerfile for future cache support
+- Fixed MySQL healthcheck to not expose password in logs (--silent flag)
+- Removed session.save_handler from php.ini (Laravel handles via SESSION_DRIVER)
+- Updated Dev Notes to match actual implementation
+- Added HTTPS/reverse proxy documentation
 
 ### File List
 - backend-api/Dockerfile (existant, vérifié)

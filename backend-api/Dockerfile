@@ -3,7 +3,7 @@ FROM dunglas/frankenphp:1-php8.4
 WORKDIR /app
 
 # Extensions PHP
-RUN install-php-extensions pdo_mysql gd zip opcache intl pcntl && \
+RUN install-php-extensions pdo_mysql gd zip opcache intl pcntl redis && \
     apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Installer Composer
