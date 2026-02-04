@@ -43,7 +43,7 @@ development_status:
   epic-0: in-progress
   0-1-initialisation-monorepo-projets-starter: done
   0-2-configuration-package-shared: done
-  0-3-configuration-docker-production-deploiement: ready-for-dev
+  0-3-configuration-docker-production-deploiement: review
   0-4-configuration-qualite-code-linting: ready-for-dev
   0-5-configuration-design-system-theme: ready-for-dev
   0-6-configuration-infrastructure-tests: ready-for-dev
